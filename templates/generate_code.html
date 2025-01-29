@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Gerador de Código</h2>
+
+    <form id="generateCodeForm">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <label for="tableSelect" class="form-label">Selecionar Tabela</label>
+                    <select id="tableSelect" class="form-select">
+                        <option value="" disabled selected>Selecione uma tabela</option>
+                        {% for table in tables %}
+                        <option value="{{ table }}">{{ table }}</option>
+                        {% endfor %}
+                    </select>
+                </tr>
+                <tr>
+                    <label for="formName" class="form-label">Nome do Formulário</label>
+                    <input type="text" class="form-control" id="formName" name="formName" placeholder="Informe o nome do formulário">
+                </tr>            
+            </thead>
+        </table>
+
+        <div id="fieldsContainer" class="mt-4" style="display: none;">
+            <h5>Selecione os Campos</h5>
+            <div id="fieldsList"></div>
+        </div>
+
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary" id="generateCodeBtn">Gerar Código</button>
+        </div>
+    </form>
+
+    <div id="generatedCode" class="mt-5" style="display: none;">
+        <h5>HTML Code</h5>
+        <div class="code-block">
+            <code>
+                <pre id="htmlCode"></pre>
+            </code>
+        </div>
+
+        <h5>Python Code</h5>
+        <div class="code-block">
+            <code>
+                <pre id="pyCode"></pre>
+            </code>
+        </div>
+
+        <h5>Insert Menu</h5>
+        <div class="code-block">
+            <code>
+                <pre id="menuInsert"></pre>
+            </code>
+        </div>
+
+        <h5>App Route</h5>
+        <div class="code-block">
+            <code>
+                <pre id="appRoute"></pre>
+            </code>
+        </div>
+
+        <h5>DBO Class</h5>
+        <div class="code-block">
+            <code>
+                <pre id="dboclass"></pre>
+            </code>
+        </div>
+
+    </div>
+
+    
+</div>
+
+<script>
+    document.getElementById('tableSelect').addEventListener('change', function () {
+        const tableName = this.value;
+
+        // Atualizar o nome do formulário com o nome da tabela (se estiver vazio)
+        const formNameInput = document.getElementById('formName');
+        if (!formNameInput.value) {
+            formNameInput.value = tableName;
+        }
+
+        // Fazer a requisição para obter os campos da tabela
+        fetch(`/generate-code/fields/${tableName}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.fields) {
+                    const fieldsContainer = document.getElementById('fieldsContainer');
+                    fieldsContainer.style.display = 'block';
+
+                    const fieldsList = `
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Campo</th>
+                                    <th>Tipo</th>
+                                    <th>Display Name</th>
+                                    <th>Incluir</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.fields.map(field => `
+                                    <tr>
+                                        <td>${field.name}</td>
+                                        <td>${field.type}</td>
+                                        <td>
+                                            <input type="text" class="form-control" 
+                                                id="displayName_${field.name}" 
+                                                name="displayNames" 
+                                                value="${field.name}">
+                                        </td>
+                                        <td>
+                                            <input type="checkbox" class="form-check-input" 
+                                                id="field_${field.name}" 
+                                                name="fields" 
+                                                value="${field.name}" 
+                                                checked>
+                                        </td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                    document.getElementById('fieldsList').innerHTML = fieldsList;
+                } else {
+                    console.error('Nenhum campo encontrado para a tabela selecionada.');
+                }
+            })
+            .catch(error => console.error('Erro ao carregar campos:', error));
+    });
+
+    document.getElementById('generateCodeForm').addEventListener('submit', (e) => {
+    e.preventDefault(); // Impede o envio padrão do formulário
+
+    const formName = document.getElementById('formName').value.trim();
+    const tablename = document.getElementById('tableSelect').value;
+    const selectedFields = Array.from(document.querySelectorAll('input[name="fields"]:checked')).map(input => input.value);
+    const displayNames = Array.from(document.querySelectorAll('input[name="displayNames"]')).reduce((acc, input) => {
+        acc[input.id.replace('displayName_', '')] = input.value.trim();
+        return acc;
+    }, {});
+
+    if (!formName || selectedFields.length === 0) {
+        alert('Por favor, preencha o nome do formulário e selecione ao menos um campo.');
+        return;
+    }
+
+    const data = {
+        table_name:tablename,
+        formName,
+        selected_fields: selectedFields,
+        displayNames
+    };
+
+    fetch('/generate-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+        .then(response => {
+            if (!response.ok) {
+                // Lança um erro caso a resposta não seja bem-sucedida
+                throw new Error(`Erro na API: ${response.status} ${response.statusText}`);
+            }
+            return response.json(); // Tenta interpretar como JSON
+        })
+        .then(data => {
+            if (data.success) {
+                document.getElementById('generatedCode').style.display = 'block';
+                document.getElementById('htmlCode').textContent = data.html_code;
+                document.getElementById('pyCode').textContent = data.py_code;
+                document.getElementById('menuInsert').textContent = data.menu_insert;
+                document.getElementById('appRoute').textContent = data.app_route;
+                document.getElementById('dboclass').textContent = data.dbo_class;
+            } else {
+                alert(`Erro: ${data.error}`);
+            }
+        })
+        .catch(error => {
+            // Mostra o erro no console e alerta ao usuário
+            console.error('Erro ao gerar o código:', error);
+            alert(`Erro ao gerar o código: ${error.message}`);
+        });
+    });
+
+
+</script>
+{% endblock %}

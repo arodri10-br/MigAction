@@ -5,6 +5,7 @@ import configparser
 from routes import bp_routes 
 from api_sysdb import bp_usuario
 from api_database import bp_database
+from generate_code import generate_code_bp
 
 app = Flask(__name__, 
     static_folder='./static',
@@ -25,6 +26,7 @@ init_db()
 app.register_blueprint(bp_routes)  
 app.register_blueprint(bp_database, url_prefix='/sys')
 app.register_blueprint(bp_usuario)
+app.register_blueprint(generate_code_bp)
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -71,7 +71,7 @@ def update_usuario(username):
         usuario.perfil = data.get('perfil', usuario.perfil)
         usuario.status = data.get('status', usuario.status)
         if 'passw' in data:
-            usuario.passw = data['passw']  # A senha será automaticamente criptografada
+            usuario.passw = data['password']  # A senha sera automaticamente criptografada
         
         session.commit()
         session.close()

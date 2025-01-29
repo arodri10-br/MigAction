@@ -1,6 +1,8 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session
 from menu import menu_items
-from sysdb import SessionLocal, Usuario, Projeto
+from sysdb import SessionLocal, Usuario, Projeto, engine
+from sqlalchemy import inspect
+
 
 bp_routes = Blueprint('routes', __name__)
 
@@ -15,6 +17,12 @@ def users():
 @bp_routes.route('/datasource')
 def configs():
     return render_template('datasource.html', menu_items=menu_items)
+
+@bp_routes.route('/generate-code')
+def generatecode():
+    inspector = inspect(engine)  # Usamos o inspector para listar tabelas
+    tables = inspector.get_table_names()  # Obtém todas as tabelas
+    return render_template('generate_code.html', menu_items=menu_items, tables=tables)
 
 @bp_routes.route('/about')
 def about():
