@@ -48,6 +48,10 @@ Este é um aplicativo web desenvolvido em Python usando Flask e SQLAlchemy para 
     ```
    Copie a chave gerada e substitua a variável `key` no arquivo `sysdb.py`.
 
+## Modelo de Dados
+
+![Modelo de Dados](docs/datamodel.png)
+
 ## Uso
 
 1. Execute o aplicativo:
