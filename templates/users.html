@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Gerenciamento de Usuários</h1>
+</div>
+
+<div class="toolbar">
+    <button onclick="showAddModal()" class="primary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Novo
+    </button>
+    <button onclick="editSelected()" class="primary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+        Editar
+    </button>
+    <button onclick="deleteSelected()" class="secondary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        Excluir
+    </button>
+</div>
+
+<div class="grid-container">
+    <table class="grid">
+        <thead>
+            <tr>
+                <th class="radio-cell"></th>
+                <th>Username</th>
+                <th>Nome</th>
+                <th>Email</th>
+                <th>Perfil</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="userTable">
+            <!-- Preenchido dinamicamente -->
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal de Formulário -->
+<div id="formModal" class="modal">
+    <div class="modal-content">
+        <h2 id="modalTitle">Novo Usuário</h2>
+        <form id="userForm">
+
+            <div class="form-group">
+                <label for="username">User Name:</label>
+                <input type="text" id="username" name="username" maxlength="10" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="nome">Nome:</label>
+                <input type="text" id="nome" name="nome" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="perfil">Perfil:</label>
+                <input type="text" id="perfil" name="perfil" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="status">Status:</label>
+                <input type="text" id="status" name="status" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Senha:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="secondary" onclick="hideModal()">Cancelar</button>
+                <button type="submit" class="primary">Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    loadUsers();
+});
+
+function loadUsers() {
+    fetch('/api/usuarios/')
+        .then(response => response.json())
+        .then(data => {
+            const userTable = document.getElementById('userTable');
+            userTable.innerHTML = '';
+            data.forEach(user => {
+                const row = userTable.insertRow();
+                const radioCell = row.insertCell();
+                radioCell.className = 'radio-cell';
+                radioCell.innerHTML = `<input type="radio" name="selectedUser" value="${user.username}">`;
+                row.insertCell().innerText = user.username;
+                row.insertCell().innerText = user.nome;
+                row.insertCell().innerText = user.email;
+                row.insertCell().innerText = user.perfil;
+                row.insertCell().innerText = user.status;
+            });
+        });
+}
+
+function showAddModal() {
+    document.getElementById('modalTitle').textContent = 'Novo Usuário';
+    document.getElementById('userForm').reset();
+    document.getElementById('username').value = '';
+    document.getElementById('formModal').classList.add('active');
+    document.getElementById('username').readOnly = false; // Permitir edicao na inclusao
+
+}
+
+function hideModal() {
+    document.getElementById('formModal').classList.remove('active');
+}
+
+function getSelectedUser() {
+    const selected = document.querySelector('input[name="selectedUser"]:checked');
+    return selected ? selected.value : null;
+}
+
+function editSelected() {
+    const username = getSelectedUser();
+    if (!username) {
+        alert('Por favor, selecione um usuário para editar.');
+        return;
+    }
+
+    fetch(`/api/usuarios/${username}`)
+        .then(response => response.json())
+        .then(user => {
+            document.getElementById('modalTitle').textContent = 'Editar Usuário';
+            document.getElementById('username').value = user.username;
+            document.getElementById('nome').value = user.nome;
+            document.getElementById('email').value = user.email;
+            document.getElementById('perfil').value = user.perfil;
+            document.getElementById('status').value = user.status;
+            document.getElementById('formModal').classList.add('active');
+            document.getElementById('username').readOnly = true; // Bloquear edicao do username
+
+        });
+}
+
+function deleteSelected() {
+    const username = getSelectedUser();
+    if (!username) {
+        alert('Por favor, selecione um usuário para excluir.');
+        return;
+    }
+
+    if (confirm('Tem certeza que deseja excluir este usuário?')) {
+        fetch(`/api/usuarios/${username}`, {
+            method: 'DELETE'
+        }).then(() => {
+            loadUsers();
+        });
+    }
+}
+
+document.getElementById('userForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const username = document.getElementById('username').value;
+    const isEdit = document.getElementById('username').readOnly;  // Se readOnly, é edição
+    const method = isEdit ? 'PUT' : 'POST';
+    const url = isEdit ? `/api/usuarios/${username}` : '/api/usuarios/';
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData.entries());
+
+    fetch(url, {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    }).then(response => response.json())
+      .then(() => {
+          hideModal();
+          loadUsers();
+      });
+});
+</script>
+{% endblock %}

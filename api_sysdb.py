@@ -1,30 +1,94 @@
-# api_sysdb.py
-from flask import Blueprint
+from flask import Blueprint, request, jsonify
+#from sqlalchemy.orm import Session
+from sysdb import SessionLocal, Usuario
+from cryptography.fernet import Fernet
 
+# Criando um blueprint para a API de usuários
+bp_usuario = Blueprint('usuario_api', __name__, url_prefix='/api/usuarios')
 
-bp = Blueprint('api_sysdb', __name__)
+# Geração da chave de criptografia (deve ser armazenada de forma segura)
+key = b'GY55m6boCz8OcPZIFW2QXWreTsvhn36g8AbPBGJDBYQ='  # Fernet.generate_key()
+cipher_suite = Fernet(key)
 
-@bp.route('/config', methods=['GET'])
-def get_configs():
-    pass
+# Criar um usuário
+@bp_usuario.route('/', methods=['POST'])
+def create_usuario():
+    try:
+        data = request.json
+        session = SessionLocal()
+        
+        if session.query(Usuario).filter_by(username=data['username']).first():
+            session.close()
+            return jsonify({"error": "Usuário já existe."}), 400
+        
+        usuario = Usuario(
+            username=data['username'],
+            nome=data['nome'],
+            email=data['email'],
+            perfil=data['perfil'],
+            status=data['status'],
+            passw=data['password']  # A senha será automaticamente criptografada
+        )
+        
+        session.add(usuario)
+        session.commit()
+        session.close()
+        return jsonify(success=True), 200
+    except Exception as e:
+        return jsonify(success=False, error=str(e)), 500
 
-@bp.route('/config/<int:id>', methods=['GET'])
-def get_config(id):
-    pass
+# Obter todos os usuários
+@bp_usuario.route('/', methods=['GET'])
+def get_usuarios():
+    session = SessionLocal()
+    usuarios = session.query(Usuario).all()
+    session.close()
+    return jsonify([usuario.to_dict() for usuario in usuarios])
 
-@bp.route('/config', methods=['POST'])
-def add_config():
-    pass
+# Obter um usuário específico
+@bp_usuario.route('/<string:username>', methods=['GET'])
+def get_usuario(username):
+    session = SessionLocal()
+    usuario = session.query(Usuario).filter_by(username=username).first()
+    session.close()
+    if usuario:
+        return jsonify(usuario.to_dict())
+    return jsonify({"error": "Usuário não encontrado."}), 404
 
-@bp.route('/config/<int:id>', methods=['PUT'])
-def update_config(id):
-    pass
+# Atualizar um usuário
+@bp_usuario.route('/<string:username>', methods=['PUT'])
+def update_usuario(username):
+    try:
+        session = SessionLocal()
+        usuario = session.query(Usuario).filter_by(username=username).first()
+        if not usuario:
+            session.close()
+            return jsonify({"error": "Usuário não encontrado."}), 404
+        
+        data = request.json
+        usuario.nome = data.get('nome', usuario.nome)
+        usuario.email = data.get('email', usuario.email)
+        usuario.perfil = data.get('perfil', usuario.perfil)
+        usuario.status = data.get('status', usuario.status)
+        if 'passw' in data:
+            usuario.passw = data['passw']  # A senha será automaticamente criptografada
+        
+        session.commit()
+        session.close()
+        return jsonify(success=True), 200
+    except Exception as e:
+        return jsonify(success=False, error=str(e)), 500
 
-@bp.route('/config/<int:id>', methods=['DELETE'])
-def delete_config(id):
-    pass
-
-@bp.route('/config/<int:id>/password', methods=['GET'])
-def get_password(id):
-    pass
-
+# Deletar um usuário
+@bp_usuario.route('/<string:username>', methods=['DELETE'])
+def delete_usuario(username):
+    session = SessionLocal()
+    usuario = session.query(Usuario).filter_by(username=username).first()
+    if not usuario:
+        session.close()
+        return jsonify({"error": "Usuário não encontrado."}), 404
+    
+    session.delete(usuario)
+    session.commit()
+    session.close()
+    return jsonify({"message": "Usuário deletado com sucesso."})

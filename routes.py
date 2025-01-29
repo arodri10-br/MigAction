@@ -2,13 +2,15 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from menu import menu_items
 from sysdb import SessionLocal, Usuario, Projeto
 
-
-
 bp_routes = Blueprint('routes', __name__)
 
 @bp_routes.route('/')
 def index():
     return render_template('index.html', menu_items=menu_items)
+
+@bp_routes.route('/users')
+def users():
+    return render_template('users.html', menu_items=menu_items)
 
 @bp_routes.route('/datasource')
 def configs():
