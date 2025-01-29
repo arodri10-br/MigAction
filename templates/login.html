@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="login-container">
+    <h2>Login</h2>
+    <form method="POST" action="{{ url_for('routes.login') }}">
+        <label for="username">Usuário:</label>
+        <input type="text" id="username" name="username" required>
+        
+        <label for="password">Senha:</label>
+        <input type="password" id="password" name="password" required>
+        
+        <label for="project">Projeto:</label>
+        <select id="project" name="project">
+            {% if projects %}
+                {% for project in projects %}
+                    <option value="{{ project.idProjeto }}">{{ project.descProjeto }}</option>
+                {% endfor %}
+            {% else %}
+                <option value="0">SYS</option>
+            {% endif %}
+        </select>
+        
+        <button type="submit">Entrar</button>
+    </form>
+
+    {% if error %}
+    <div class="error-message">
+        <p>Usuário, senha ou projeto inválidos. Tente novamente.</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .login-container {
+        width: 300px;
+        margin: 100px auto;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        text-align: center;
+        background-color: #f9f9f9;
+    }
+    
+    .login-container h2 {
+        margin-bottom: 20px;
+    }
+    
+    .login-container input, .login-container select {
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+    
+    .login-container button {
+        width: 100%;
+        padding: 10px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+    
+    .login-container button:hover {
+        background-color: #218838;
+    }
+    
+    .error-message {
+        margin-top: 10px;
+        padding: 10px;
+        background-color: #dc3545;
+        color: white;
+        border-radius: 5px;
+    }
+</style>
+{% endblock %}

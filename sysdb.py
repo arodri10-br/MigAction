@@ -1,6 +1,6 @@
-from sqlalchemy import create_engine, Column, String, Integer, Date, CheckConstraint, ForeignKey, Text
+from sqlalchemy import create_engine, Column, String, Integer, Date, ForeignKey, Text
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.orm import sessionmaker
 from cryptography.fernet import Fernet
 
 Base = declarative_base()

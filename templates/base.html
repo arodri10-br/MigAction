@@ -5,12 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Sistema de Migração{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
+
     <nav class="navbar">
-        <a href="/" class="navbar-brand">Sistema de Migração</a>
+        <a href="{{ url_for('routes.index') }}" class="navbar-brand">Sistema de Migração</a>
+        <div class="navbar-info-right">
+            {% if session.username %}
+                <span>Usuário: {{ session.nome }} | Projeto: {{ session.nomeProjeto }}</span>
+            {% endif %}
+        </div>
     </nav>
+
     <div class="container">
         <div class="sidebar">
             <ul>
@@ -19,12 +25,11 @@
                 {% endfor %}
             </ul>
         </div>
+
         <div class="content">
             {% block content %}{% endblock %}
         </div>
     </div>
-    <footer>
-        <p>&copy; 2025 Actionsys. Todos os direitos reservados.</p>
-    </footer>
+
 </body>
 </html>

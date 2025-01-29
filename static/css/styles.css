@@ -34,6 +34,13 @@ body {
   text-decoration: none;
 }
 
+.navbar-info-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+
 .container {
   display: flex;
   min-height: calc(100vh - 64px);
