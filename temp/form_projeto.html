@@ -1,0 +1,198 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="mb-4">projeto</h1>
+</div>
+<div class="toolbar">
+    <button onclick="showAddModal()" class="primary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Novo
+    </button>
+    <button onclick="editSelected()" class="primary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+        Editar
+    </button>
+    <button onclick="deleteSelected()" class="secondary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        Excluir
+    </button>
+</div>
+
+<div class="grid-container">
+    <table class="grid">
+        <thead>
+            <tr>
+                <th class="radio-cell"></th>
+                <th>idProjeto</th>
+                <th>codProjeto</th>
+                <th>descProjeto</th>
+                <th>status</th>
+                <th>username</th>
+                <th>dtAtualizacao</th>
+            </tr>
+        </thead>
+        <tbody id="projetoTable">
+            <!-- Preenchido dinamicamente -->
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal de Formulário -->
+<div id="formModal" class="modal">
+    <div class="modal-content">
+        <h2 id="modalTitle">Novo "projeto"</h2>
+        <form id="projetoForm">
+            
+            <div class="form-group">
+                <label for="idProjeto">idProjeto:</label>
+                <input type="number" id="idProjeto" name="idProjeto" >
+            </div>
+        
+
+            <div class="form-group">
+                <label for="codProjeto">codProjeto:</label>
+                <input type="text" id="codProjeto" name="codProjeto" >
+            </div>
+        
+
+            <div class="form-group">
+                <label for="descProjeto">descProjeto:</label>
+                <input type="text" id="descProjeto" name="descProjeto" >
+            </div>
+        
+
+            <div class="form-group">
+                <label for="status">status:</label>
+                <input type="text" id="status" name="status" >
+            </div>
+        
+
+            <div class="form-group">
+                <label for="username">username:</label>
+                <input type="text" id="username" name="username" >
+            </div>
+        
+
+            <div class="form-group">
+                <label for="dtAtualizacao">dtAtualizacao:</label>
+                <input type="date" id="dtAtualizacao" name="dtAtualizacao" >
+            </div>
+        
+            <div class="modal-actions">
+                <button type="button" class="secondary" onclick="hideModal()">Cancelar</button>
+                <button type="submit" class="primary">Salvar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        loadprojeto();
+    });
+    function loadprojeto() {
+        fetch('/api/projeto/')
+            .then(response => response.json())
+            .then(data => {
+                const projetoTable = document.getElementById('projetoTable');
+                projetoTable.innerHTML = '';
+                data.forEach(user => {
+                    const row = projetoTable.insertRow();
+                    const radioCell = row.insertCell();
+                    radioCell.className = 'radio-cell';
+                    radioCell.innerHTML = `<input type="radio" name="selectedUser" value="${projeto.idProjeto}">`;
+                    row.insertCell().innerText = projeto.idProjeto;
+                    row.insertCell().innerText = projeto.codProjeto;
+                    row.insertCell().innerText = projeto.descProjeto;
+                    row.insertCell().innerText = projeto.status;
+                    row.insertCell().innerText = projeto.username;
+                    row.insertCell().innerText = projeto.dtAtualizacao;
+
+                });
+            });
+    }
+    
+
+    function showAddModal() {
+        document.getElementById('modalTitle').textContent = 'Novo projeto';
+        document.getElementById('projetoForm').reset();
+        document.getElementById('idProjeto').value = '';
+        document.getElementById('formModal').classList.add('active');
+        document.getElementById('idProjeto').readOnly = false; // Permitir edicao na inclusao
+
+    }
+    
+    function hideModal() {
+        document.getElementById('formModal').classList.remove('active');
+    }
+
+    function getSelected(projeto) {
+        const selected = document.querySelector('input[name="selectedprojeto"]:checked');
+        return selected ? selected.value : null;
+    }
+
+    function editSelected() {
+        const projeto = getSelectedprojeto();
+        if (!{table_name}) {
+            alert('Por favor, selecione um projeto para editar.');
+            return;
+        }
+
+        fetch(`/api/projeto/${projeto}`)
+            .then(response => response.json())
+            .then(user => {
+                document.getElementById('modalTitle').textContent = 'Editar projeto';
+                document.getElementById("idProjeto").value = projeto.idProjeto;
+                document.getElementById("codProjeto").value = projeto.codProjeto;
+                document.getElementById("descProjeto").value = projeto.descProjeto;
+                document.getElementById("status").value = projeto.status;
+                document.getElementById("username").value = projeto.username;
+                document.getElementById("dtAtualizacao").value = projeto.dtAtualizacao;
+
+                document.getElementById('idProjeto').readOnly = true; // Bloquear edicao
+
+            });
+    }
+
+    function deleteSelected() {
+        const projeto = getSelectedprojeto();
+        if (!projeto) {
+            alert('Por favor, selecione um projeto para excluir.');
+            return;
+        }
+
+        if (confirm('Tem certeza que deseja excluir este projeto?')) {
+            fetch(`/api/projeto/${projeto}`, {
+                method: 'DELETE'
+            }).then(() => {
+                loadprojeto();
+            });
+        }
+    }
+       
+    document.getElementById('projetoForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const projeto = document.getElementById('idProjeto').value;
+        const isEdit = document.getElementById('idProjeto').readOnly;  // Se readOnly, é edição
+        const method = isEdit ? 'PUT' : 'POST';
+        const url = isEdit ? `/api/projeto/${projeto}` : '/api/projeto/';
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+
+        fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        }).then(response => response.json())
+        .then(() => {
+            hideModal();
+            loadprojeto();
+        });
+    });
+</script>
+
+{% endblock %}

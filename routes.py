@@ -14,6 +14,10 @@ def index():
 def users():
     return render_template('users.html', menu_items=menu_items)
 
+@bp_routes.route('/projeto')
+def call_projeto():
+    return render_template('form_projeto.html', menu_items=menu_items)
+
 @bp_routes.route('/datasource')
 def configs():
     return render_template('datasource.html', menu_items=menu_items)

@@ -343,7 +343,7 @@ def generate_python_code(table_name, fields):
         for field in fields
     )
     fields_create = ", ".join(f"{field}=data['{field}']" for field in fields)
-    fields_update = ", ".join(f"{table_name}.{field}=data.get('{field}', {table_name}.{field})" for field in fields)
+    fields_update = "\n        ".join(f"{table_name}.{field}=data.get('{field}', {table_name}.{field})" for field in fields)
 
     return f"""
 from flask import Blueprint, request, jsonify
@@ -375,7 +375,7 @@ def create_{table_name}():
 
 # Obter {table_name}
 @bp_{table_name}.route('/', methods=['GET'])
-def get_{table_name}():
+def get_{table_name}_list():
     session = SessionLocal()
     {table_name}s = session.query({table_name.capitalize()}).all()
     session.close()
@@ -427,107 +427,21 @@ def delete_{table_name}({fields[0]}):
 
 def generate_menu_insert(table_name):
     return f"""
-INSERT INTO menus (id, parent_id, title, url, order_num, is_active)
-VALUES (NULL, NULL, '{table_name.capitalize()}', '/{table_name}/manage', 1, TRUE);
+        {{"name": "{table_name.capitalize()}", "url": "/{table_name}"}},
 """
 
 def generate_app_route(table_name, formName):
     return f"""
-# Import the generated blueprint
-from api_{table_name} import {table_name}_bp
+@bp_routes.route('/{table_name}')
+def call_{table_name.capitalize()}():
+    return render_template('form_{table_name}.html', menu_items=menu_items)
 
-# Register the blueprint
-app.register_blueprint({table_name}_bp)
-
-@app.route('/{table_name}/manage', methods=['GET'])
-@admin_required
-def manage_{table_name}():
-    \"\"\"Render the management page for {formName}.\"\"\"
-    # Fetch all records for rendering in the table
-    records = {table_name.capitalize()}.query.all()
-    return render_template(
-        'form_{table_name.lower()}.html',
-        portal_name=config['portal']['name'],
-        data=records
-    )
 """
 
 def generate_dbo_table(table_name):
-    """
-    Gera a definição da classe SQLAlchemy para o arquivo db.py com base na tabela do banco de dados.
-
-    :param table_name: Nome da tabela.
-    :return: Código Python da classe.
-    """
-    # Obter características dos campos da tabela
-    field_characteristics = {field['name']: field for field in get_table_columns(table_name)}
-
-    # Verifica se os campos foram encontrados
-    if not field_characteristics:
-        raise ValueError(f"A tabela '{table_name}' não foi encontrada ou não possui colunas.")
-
-    # Função auxiliar para determinar o tipo de coluna SQLAlchemy
-    def get_sqlalchemy_column_type(field):
-        column_type = field.get('type', '').lower()
-        length = field.get('length')  # Verifica se há um tamanho definido
-
-        if 'int' in column_type:
-            return 'db.Integer'
-        elif 'varchar' in column_type or 'text' in column_type:
-            if length:  # Se houver tamanho, inclui no tipo
-                return f'db.String({length})'
-            return 'db.String'
-        elif 'float' in column_type or 'double' in column_type or 'decimal' in column_type:
-            return 'db.Float'
-        elif 'date' in column_type and 'time' not in column_type:
-            return 'db.Date'
-        elif 'datetime' in column_type or 'timestamp' in column_type:
-            return 'db.DateTime'
-        elif 'bool' in column_type or 'bit' in column_type:
-            return 'db.Boolean'
-        elif 'enum' in column_type:  # Para campos ENUM
-            options = field.get('options', [])
-            if options:
-                options_repr = ', '.join([f"'{opt}'" for opt in options])
-                return f"db.Enum({options_repr})"
-            return 'db.Enum'
-        else:
-            return 'db.String'  # Tipo padrão
-
-    # Determinar se algum campo é chave primária (por inspeção manual)
-    primary_key_fields = [
-        field
-        for field, attributes in field_characteristics.items()
-        if not attributes.get('nullable', True) and attributes['name'] == 'id'
-    ]
-    has_primary_key = len(primary_key_fields) > 0
-
-    # Gera a definição dos campos com base nas características
-    fields_definitions = "\n    ".join(
-        f"{field} = db.Column({get_sqlalchemy_column_type(field_characteristics[field])}"
-        f"{', primary_key=True' if field in primary_key_fields else ''})"
-        for field in field_characteristics
-    )
-
-    # Adiciona uma chave primária padrão se nenhuma estiver definida
-    primary_key_definition = ""
-    if not has_primary_key:
-        primary_key_definition = "id = db.Column(db.Integer, primary_key=True, autoincrement=True)"
-
-    # Cria a classe com SQLAlchemy
     class_code = f"""
-class {table_name.capitalize()}(db.Model):
-    __tablename__ = '{table_name}'
+from api_{table_name} import bp_{table_name}
 
-    {primary_key_definition}
-    {fields_definitions}
-
-    def __repr__(self):
-        return f"<{table_name.capitalize()} id={{self.id}}>"  # Representação legível
-
-    def to_dict(self):
-        return {{
-            {', '.join(f"'{field}': self.{field}" for field in field_characteristics)}
-        }}
+app.register_blueprint(bp_{table_name})
 """
     return class_code

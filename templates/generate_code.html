@@ -39,35 +39,62 @@
     </form>
 
     <div id="generatedCode" class="mt-5" style="display: none;">
-        <h5>HTML Code</h5>
-        <div class="code-block">
+
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="showHtmlCode" >
+            <label class="form-check-label" for="showHtmlCode">
+            Mostrar HTML Code
+            </label>
+        </div>
+        <div id="htmlCodeBlock" class="mt-2">
+            <h5>HTML Code</h5>
+            <div class="code-block">
             <code>
                 <pre id="htmlCode"></pre>
             </code>
+            </div>
         </div>
 
-        <h5>Python Code</h5>
-        <div class="code-block">
+        <div class="form-check mt-3">
+            <input class="form-check-input" type="checkbox" id="showPyCode" >
+            <label class="form-check-label" for="showPyCode">
+            Mostrar Python Code
+            </label>
+        </div>
+        <div id="pyCodeBlock" class="mt-2">
+            <h5>Python Code</h5>
+            <div class="code-block">
             <code>
                 <pre id="pyCode"></pre>
             </code>
+            </div>
         </div>
 
-        <h5>Insert Menu</h5>
+    <script>
+        document.getElementById('showHtmlCode').addEventListener('change', function () {
+        document.getElementById('htmlCodeBlock').style.display = this.checked ? 'block' : 'none';
+        });
+
+        document.getElementById('showPyCode').addEventListener('change', function () {
+        document.getElementById('pyCodeBlock').style.display = this.checked ? 'block' : 'none';
+        });
+    </script>
+
+        <h5>Incluir opção de menu, no arquivo menu.py</h5>
         <div class="code-block">
             <code>
                 <pre id="menuInsert"></pre>
             </code>
         </div>
 
-        <h5>App Route</h5>
+        <h5>Incluir as rotas no arquivo routes.py</h5>
         <div class="code-block">
             <code>
                 <pre id="appRoute"></pre>
             </code>
         </div>
 
-        <h5>DBO Class</h5>
+        <h5>Incluir o Blue Print para expor os End Points no arquivo app.py</h5>
         <div class="code-block">
             <code>
                 <pre id="dboclass"></pre>
