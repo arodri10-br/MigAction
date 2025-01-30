@@ -83,7 +83,7 @@ def generate_source_code():
             html_file.write(html_code)
 
         # Gravar o arquivo python
-        python_path = os.path.join(temp_dir, f"api_{table_name}.py")
+        python_path = os.path.join(temp_dir, f"api_{table_name}.temp")
         with open(python_path, 'w', encoding='utf-8') as python_file:
             python_file.write(py_code)
 
@@ -161,11 +161,10 @@ def generate_html_code(table_name, fields, displayNames, formName):
     
     fields_html = "\n".join(
         f"""
-                <div class="mb-3">
-                    <label for="{field}" class="form-label">{displayNames.get(field, field)}</label>
-                    <input type="{map_field_to_input_type(field_characteristics[field]['type'])}" 
-                        class="form-control" id="{field}" name="{field}">
-                </div>
+            <div class="form-group">
+                <label for="{field}">{displayNames.get(field, field)}:</label>
+                <input type="{map_field_to_input_type(field_characteristics[field]['type'])}" id="{field}" name="{field}" >
+            </div>
         """
         for field in fields
     )
@@ -174,7 +173,7 @@ def generate_html_code(table_name, fields, displayNames, formName):
         for field in fields
     )
     detail_table = "\n".join(
-        f"""        <td>{{{{ linha.{field} }}}}</td>"""
+        f"""                <th>{field}</th>"""
         for field in fields
     )
 
@@ -182,149 +181,144 @@ def generate_html_code(table_name, fields, displayNames, formName):
 {{% extends "base.html" %}}
 
 {{% block content %}}
-<div class="container mt-4">
-    <h2 class="mb-4">{formName}</h2>
+<div class="page-header">
+    <h1 class="mb-4">{formName}</h1>
+</div>
+<div class="toolbar">
+    <button onclick="showAddModal()" class="primary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Novo
+    </button>
+    <button onclick="editSelected()" class="primary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+        Editar
+    </button>
+    <button onclick="deleteSelected()" class="secondary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        Excluir
+    </button>
+</div>
 
-    <!-- Toolbar -->
-    <div class="d-flex mb-3">
-        <button id="addConfigBtn" class="btn btn-primary me-2">
-            <i class="bi bi-plus-circle"></i> Incluir
-        </button>
-        <button id="editConfigBtn" class="btn btn-secondary me-2" disabled>
-            <i class="bi bi-pencil"></i> Editar
-        </button>
-        <button id="deleteConfigBtn" class="btn btn-danger" disabled>
-            <i class="bi bi-trash"></i> Excluir
-        </button>
-    </div>
-
-    <!-- Tabela de Registros -->
-    <table class="table table-striped">
+<div class="grid-container">
+    <table class="grid">
         <thead>
             <tr>
-                <th></th>
-                {header_table}
+                <th class="radio-cell"></th>
+{detail_table}
             </tr>
         </thead>
         <tbody id="{table_name}Table">
-            {{% for linha in data %}}
-            <tr>
-                <td>
-                    <input type="radio" name="selectedRecord" value="{{{{ linha.id }}}}">
-                </td>
-                {detail_table}
-            </tr>
-            {{% endfor %}}
+            <!-- Preenchido dinamicamente -->
         </tbody>
     </table>
 </div>
 
-<!-- Modal para Incluir/Editar Registros -->
-<div class="modal fade" id="recordModal" tabindex="-1" aria-labelledby="recordModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="recordModalLabel">Incluir Registro</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+<!-- Modal de Formulário -->
+<div id="formModal" class="modal">
+    <div class="modal-content">
+        <h2 id="modalTitle">Novo "{table_name}"</h2>
+        <form id="{table_name}Form">
+            {fields_html}
+            <div class="modal-actions">
+                <button type="button" class="secondary" onclick="hideModal()">Cancelar</button>
+                <button type="submit" class="primary">Salvar</button>
             </div>
-            <form id="{table_name}Form">
-                <div class="modal-body">
-                    {fields_html}
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Salvar</button>
-                </div>
-            </form>
-        </div>
+        </form>
     </div>
 </div>
 
 <script>
-    const addConfigBtn = document.getElementById('addConfigBtn');
-    const editConfigBtn = document.getElementById('editConfigBtn');
-    const deleteConfigBtn = document.getElementById('deleteConfigBtn');
-    const recordTable = document.getElementById('{table_name}Table');
-    let selectedRecordId = null;
-
-    // Selecionar Registro
-    recordTable.addEventListener('change', (e) => {{
-        if (e.target.name === 'selectedRecord') {{
-            selectedRecordId = e.target.value;
-            editConfigBtn.disabled = false;
-            deleteConfigBtn.disabled = false;
-        }}
+    document.addEventListener('DOMContentLoaded', function() {{
+        load{table_name}();
     }});
+    function load{table_name}() {{
+        fetch('/api/{table_name}/')
+            .then(response => response.json())
+            .then(data => {{
+                const {table_name}Table = document.getElementById('{table_name}Table');
+                {table_name}Table.innerHTML = '';
+                data.forEach(user => {{
+                    const row = {table_name}Table.insertRow();
+                    const radioCell = row.insertCell();
+                    radioCell.className = 'radio-cell';
+                    radioCell.innerHTML = `<input type="radio" name="selectedUser" value="${{{table_name}.{fields[0]}}}">`;
+{ ''.join([f'                    row.insertCell().innerText = {table_name}.{field};{quebraLinha}' for index, field in enumerate(fields)]) }
+                }});
+            }});
+    }}
+    
 
-    // Incluir Registro
-    addConfigBtn.addEventListener('click', () => {{
-        document.getElementById('recordModalLabel').textContent = 'Incluir Registro';
+    function showAddModal() {{
+        document.getElementById('modalTitle').textContent = 'Novo {table_name}';
         document.getElementById('{table_name}Form').reset();
-        selectedRecordId = null; // Garantir que será uma criação
-        const recordModal = new bootstrap.Modal(document.getElementById('recordModal'));
-        recordModal.show();
-    }});
+        document.getElementById('{fields[0]}').value = '';
+        document.getElementById('formModal').classList.add('active');
+        document.getElementById('{fields[0]}').readOnly = false; // Permitir edicao na inclusao
 
-    // Editar Registro
-    editConfigBtn.addEventListener('click', () => {{
-        if (!selectedRecordId) {{
-            alert('Nenhum registro foi selecionado.');
+    }}
+    
+    function hideModal() {{
+        document.getElementById('formModal').classList.remove('active');
+    }}
+
+    function getSelected({table_name}) {{
+        const selected = document.querySelector('input[name="selected{table_name}"]:checked');
+        return selected ? selected.value : null;
+    }}
+
+    function editSelected() {{
+        const {table_name} = getSelected{table_name}();
+        if (!{{table_name}}) {{
+            alert('Por favor, selecione um {table_name} para editar.');
             return;
         }}
 
-        const row = document.querySelector(`input[name="selectedRecord"][value="${{selectedRecordId}}"]`).closest('tr');
-        const cells = row.cells;
+        fetch(`/api/{table_name}/${{{table_name}}}`)
+            .then(response => response.json())
+            .then(user => {{
+                document.getElementById('modalTitle').textContent = 'Editar {table_name}';
+{ ''.join([f'                document.getElementById("{field}").value = {table_name}.{field};{quebraLinha}' for index, field in enumerate(fields)]) }
+                document.getElementById('{fields[0]}').readOnly = true; // Bloquear edicao
 
-        // Preencher os campos do modal
-        document.getElementById('recordModalLabel').textContent = 'Editar Registro';
-        { ''.join([f'        document.getElementById("{field}").value = cells[{index + 1}].textContent.trim();{quebraLinha}' for index, field in enumerate(fields)]) }
+            }});
+    }}
 
-        const recordModal = new bootstrap.Modal(document.getElementById('recordModal'));
-        recordModal.show();
-    }});
-
-    // Excluir Registro
-    deleteConfigBtn.addEventListener('click', () => {{
-        if (!selectedRecordId) return;
-
-        if (confirm('Deseja excluir o registro?')) {{
-            fetch(`/{table_name}/${{selectedRecordId}}`, {{ method: 'DELETE' }})
-                .then(response => response.json())
-                .then(data => {{
-                    if (data.success) {{
-                        location.reload();
-                    }} else {{
-                        alert('Erro ao excluir o registro.');
-                    }}
-                }});
+    function deleteSelected() {{
+        const {table_name} = getSelected{table_name}();
+        if (!{table_name}) {{
+            alert('Por favor, selecione um {table_name} para excluir.');
+            return;
         }}
-    }});
 
-    // Submissão do Formulário
-    document.getElementById('{table_name}Form').addEventListener('submit', (e) => {{
-        e.preventDefault();
-
-        const formData = new FormData(e.target);
+        if (confirm('Tem certeza que deseja excluir este {table_name}?')) {{
+            fetch(`/api/{table_name}/${{{table_name}}}`, {{
+                method: 'DELETE'
+            }}).then(() => {{
+                load{table_name}();
+            }});
+        }}
+    }}
+       
+    document.getElementById('{table_name}Form').addEventListener('submit', function(event) {{
+        event.preventDefault();
+        const {table_name} = document.getElementById('{fields[0]}').value;
+        const isEdit = document.getElementById('{fields[0]}').readOnly;  // Se readOnly, é edição
+        const method = isEdit ? 'PUT' : 'POST';
+        const url = isEdit ? `/api/{table_name}/${{{table_name}}}` : '/api/{table_name}/';
+        const formData = new FormData(this);
         const data = Object.fromEntries(formData.entries());
 
-        const url = selectedRecordId
-            ? `/{table_name}/${{selectedRecordId}}`
-            : `/{table_name}/`;
-
         fetch(url, {{
-            method: selectedRecordId ? 'PUT' : 'POST',
-            headers: {{ 'Content-Type': 'application/json' }},
+            method: method,
+            headers: {{
+                'Content-Type': 'application/json'
+            }},
             body: JSON.stringify(data)
-        }})
-            .then(response => response.json())
-            .then(data => {{
-                if (data.success) {{
-                    location.reload();
-                }} else {{
-                    alert(`Erro: ${{data.error}}`);
-                }}
-            }})
-            .catch(error => console.error('Erro:', error));
+        }}).then(response => response.json())
+        .then(() => {{
+            hideModal();
+            load{table_name}();
+        }});
     }});
 </script>
 
@@ -348,70 +342,87 @@ def generate_python_code(table_name, fields):
         f"{field}=data.get('{field}')"
         for field in fields
     )
+    fields_create = ", ".join(f"{field}=data['{field}']" for field in fields)
+    fields_update = ", ".join(f"{table_name}.{field}=data.get('{field}', {table_name}.{field})" for field in fields)
 
     return f"""
-from flask import Blueprint, request, jsonify, abort
-from db import db, {table_name.capitalize()}
+from flask import Blueprint, request, jsonify
+from sysdb import SessionLocal, {table_name.capitalize()}
 
-{table_name}_bp = Blueprint('{table_name}', __name__, url_prefix='/{table_name}')
+bp_{table_name} = Blueprint('{table_name}_api', __name__, url_prefix='/api/{table_name}')
 
-@{table_name}_bp.route('/', methods=['GET'])
-def list_{table_name}():
-    try:
-        records = {table_name.capitalize()}.query.all()
-        return jsonify([record.to_dict() for record in records]), 200
-    except Exception as e:
-        return jsonify(success=False, error=str(e)), 500
-
-@{table_name}_bp.route('/<int:record_id>', methods=['GET'])
-def get_{table_name}(record_id):
-    try:
-        record = {table_name.capitalize()}.query.get(record_id)
-        if not record:
-            return jsonify(success=False, error="Record not found"), 404
-        return jsonify(record.to_dict()), 200
-    except Exception as e:
-        return jsonify(success=False, error=str(e)), 500
-
-@{table_name}_bp.route('/', methods=['POST'])
+# Criar {table_name}
+@bp_{table_name}.route('/', methods=['POST'])
 def create_{table_name}():
     try:
         data = request.json
-        new_record = {table_name.capitalize()}(
-            {fields_creation}
+        session = SessionLocal()
+        
+        if session.query({table_name.capitalize()}).filter_by({fields[0]}=data['{fields[0]}']).first():
+            session.close()
+            return jsonify({{"error": "{fields[0]} já existe."}}), 400
+        
+        {table_name} = {table_name.capitalize()}(
+            {fields_create}
         )
-        db.session.add(new_record)
-        db.session.commit()
-        return jsonify(success=True, id=new_record.id), 201
+        
+        session.add({table_name})
+        session.commit()
+        session.close()
+        return jsonify(success=True), 200
     except Exception as e:
         return jsonify(success=False, error=str(e)), 500
 
-@{table_name}_bp.route('/<int:record_id>', methods=['PUT'])
-def update_{table_name}(record_id):
+# Obter {table_name}
+@bp_{table_name}.route('/', methods=['GET'])
+def get_{table_name}():
+    session = SessionLocal()
+    {table_name}s = session.query({table_name.capitalize()}).all()
+    session.close()
+    return jsonify([{table_name}.to_dict() for {table_name} in {table_name}s])
+
+# Obter um registro específico da tabela {table_name}
+@bp_{table_name}.route('/<string:{fields[0]}>', methods=['GET'])
+def get_{table_name}({fields[0]}):
+    session = SessionLocal()
+    {table_name} = session.query({table_name.capitalize()}).filter_by({fields[0]}={fields[0]}).first()
+    session.close()
+    if {table_name}:
+        return jsonify({fields[0]}.to_dict())
+    return jsonify({{"error": "{table_name} não encontrado."}}), 404
+
+# Atualizar um registro da tabela {table_name}
+@bp_{table_name}.route('/<string:{fields[0]}>', methods=['PUT'])
+def update_{table_name}({fields[0]}):
     try:
+        session = SessionLocal()
+        {table_name} = session.query({table_name.capitalize()}).filter_by({fields[0]}={fields[0]}).first()
+        if not {table_name}:
+            session.close()
+            return jsonify({{"error": "Registro não encontrado."}}), 404
+        
         data = request.json
-        record = {table_name.capitalize()}.query.get(record_id)
-        if not record:
-            return jsonify(success=False, error="Record not found"), 404
-
-        {fields_assignment}
-
-        db.session.commit()
+        {fields_update}
+        
+        session.commit()
+        session.close()
         return jsonify(success=True), 200
     except Exception as e:
         return jsonify(success=False, error=str(e)), 500
 
-@{table_name}_bp.route('/<int:record_id>', methods=['DELETE'])
-def delete_{table_name}(record_id):
-    try:
-        record = {table_name.capitalize()}.query.get(record_id)
-        if not record:
-            return jsonify(success=False, error="Record not found"), 404
-        db.session.delete(record)
-        db.session.commit()
-        return jsonify(success=True), 200
-    except Exception as e:
-        return jsonify(success=False, error=str(e)), 500
+# Excluir um Registro da tabela {table_name}
+@bp_{table_name}.route('/<string:{fields[0]}>', methods=['DELETE'])
+def delete_{table_name}({fields[0]}):
+    session = SessionLocal()
+    {table_name} = session.query({table_name.capitalize()}).filter_by({fields[0]}={fields[0]}).first()
+    if not {table_name}:
+        session.close()
+        return jsonify({{"error": "Registro não encontrado."}}), 404
+    
+    session.delete({table_name})
+    session.commit()
+    session.close()
+    return jsonify({{"message": "Registro deletado com sucesso."}})
 """
 
 def generate_menu_insert(table_name):

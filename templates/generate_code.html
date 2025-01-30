@@ -1,36 +1,41 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-4">
-    <h2 class="mb-4">Gerador de Código</h2>
+<div class="page-header">
+    <h1>Gerador de Código</h1>
+</div>
 
+<div class="grid-container">
     <form id="generateCodeForm">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <label for="tableSelect" class="form-label">Selecionar Tabela</label>
-                    <select id="tableSelect" class="form-select">
-                        <option value="" disabled selected>Selecione uma tabela</option>
-                        {% for table in tables %}
-                        <option value="{{ table }}">{{ table }}</option>
-                        {% endfor %}
-                    </select>
-                </tr>
-                <tr>
-                    <label for="formName" class="form-label">Nome do Formulário</label>
-                    <input type="text" class="form-control" id="formName" name="formName" placeholder="Informe o nome do formulário">
-                </tr>            
-            </thead>
-        </table>
+
+        <div class="toolbar">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <label for="tableSelect" class="form-label">Selecionar Tabela</label>
+                        <select id="tableSelect" class="form-select">
+                            <option value="" disabled selected>Selecione uma tabela</option>
+                            {% for table in tables %}
+                            <option value="{{ table }}">{{ table }}</option>
+                            {% endfor %}
+                        </select>
+                    </tr>
+                    <tr>
+                        <label for="formName" class="form-label">Nome do Formulário</label>
+                        <input type="text" class="form-control" id="formName" name="formName" placeholder="Informe o nome do formulário">
+                    </tr>            
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary" id="generateCodeBtn">Gerar Código</button>
+                    </div>
+                </thead>
+            </table>
+        </div>
 
         <div id="fieldsContainer" class="mt-4" style="display: none;">
             <h5>Selecione os Campos</h5>
             <div id="fieldsList"></div>
         </div>
 
-        <div class="mt-4">
-            <button type="submit" class="btn btn-primary" id="generateCodeBtn">Gerar Código</button>
-        </div>
     </form>
 
     <div id="generatedCode" class="mt-5" style="display: none;">
