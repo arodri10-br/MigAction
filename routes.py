@@ -64,7 +64,7 @@ def login():
             error = True
 
     # Buscar projetos disponíveis
-    projects = session_db.query(Projeto).filter_by(status='Ativo').all()
+    projects = session_db.query(Projeto).filter_by(status='A').all()
     return render_template('login.html', projects=projects, error=error)
 
 @bp_routes.route('/logout')

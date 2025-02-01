@@ -17,7 +17,8 @@ def create_projeto():
             return jsonify({"error": "idProjeto já existe."}), 400
         
         projeto = Projeto(
-                    idProjeto=data['idProjeto'], 
+                    # Nao considerar o idProjeto, pois é Chave Primária e AutoIncremento
+                    #idProjeto=data['idProjeto'], 
                     codProjeto=data['codProjeto'], 
                     descProjeto=data['descProjeto'], 
                     status=data['status'], 
@@ -31,7 +32,7 @@ def create_projeto():
         return jsonify(success=True), 200
     except Exception as e:
         print(f"Error: {str(e)}")
-        jsonify(success=False, error=str(e)), 500
+        return jsonify(success=False, error=str(e)), 500
 
 # Obter projeto
 @bp_projeto.route('/', methods=['GET'])
@@ -48,7 +49,7 @@ def get_projeto(idProjeto):
     projeto = session.query(Projeto).filter_by(idProjeto=idProjeto).first()
     session.close()
     if projeto:
-        return jsonify(idProjeto.to_dict())
+        return jsonify(projeto.to_dict())                           # revisar o programa de geracao, esta usando o idProjeto quando deveria ser os dados !
     return jsonify({"error": "projeto não encontrado."}), 404
 
 # Atualizar um registro da tabela projeto

@@ -43,23 +43,20 @@
         <h2 id="modalTitle">Novo "projeto"</h2>
         <form id="projetoForm">
             
-            <div class="form-group">
+            <div class="form-group" id="idProjetoContainer" style="display: none;">
                 <label for="idProjeto">idProjeto:</label>
-                <input type="number" id="idProjeto" name="idProjeto" >
+                <input type="number" id="idProjeto" name="idProjeto" readonly>
             </div>
-        
 
             <div class="form-group">
                 <label for="codProjeto">codProjeto:</label>
                 <input type="text" id="codProjeto" name="codProjeto" >
             </div>
-        
 
             <div class="form-group">
                 <label for="descProjeto">descProjeto:</label>
                 <input type="text" id="descProjeto" name="descProjeto" >
             </div>
-        
 
             <div class="form-group">
                 <label for="status">status:</label>
@@ -70,47 +67,61 @@
                 <button type="button" class="secondary" onclick="hideModal()">Cancelar</button>
                 <button type="submit" class="primary">Salvar</button>
             </div>
+            <div id="errorMessage" class="error-message" style="display: none; color: red; margin-top: 10px;"></div>
         </form>
     </div>
 </div>
 
 <script>
+
+    function getSelectedprojeto() {
+        const selected = document.querySelector('input[name="selectedUser"]:checked');
+        return selected ? selected.value : null;
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         loadprojeto();
     });
     function loadprojeto() {
-        fetch('/api/projeto/')
-            .then(response => response.json())
-            .then(data => {
-                const projetoTable = document.getElementById('projetoTable');
-                projetoTable.innerHTML = '';
-                data.forEach(user => {
-                    const row = projetoTable.insertRow();
-                    const radioCell = row.insertCell();
-                    radioCell.className = 'radio-cell';
-                    radioCell.innerHTML = `<input type="radio" name="selectedUser" value="${projeto.idProjeto}">`;
-                    row.insertCell().innerText = projeto.idProjeto;
-                    row.insertCell().innerText = projeto.codProjeto;
-                    row.insertCell().innerText = projeto.descProjeto;
-                    row.insertCell().innerText = projeto.status;
-
-                });
+    fetch('/api/projeto/')
+        .then(response => response.json())
+        .then(data => {
+            const projetoTable = document.getElementById('projetoTable');
+            projetoTable.innerHTML = '';
+            data.forEach(user => {  // Corrigindo a variável usada
+                const row = projetoTable.insertRow();
+                const radioCell = row.insertCell();
+                radioCell.className = 'radio-cell';
+                radioCell.innerHTML = `<input type="radio" name="selectedUser" value="${user.idProjeto}">`;
+                row.insertCell().innerText = user.idProjeto;
+                row.insertCell().innerText = user.codProjeto;
+                row.insertCell().innerText = user.descProjeto;
+                row.insertCell().innerText = user.status;
             });
+        })
+        .catch(error => console.error('Erro ao carregar projetos:', error));
     }
-    
 
     function showAddModal() {
         document.getElementById('modalTitle').textContent = 'Novo projeto';
         document.getElementById('projetoForm').reset();
         document.getElementById('idProjeto').value = '';
         document.getElementById('formModal').classList.add('active');
-        document.getElementById('idProjeto').readOnly = false; // Permitir edicao na inclusao
-
+        document.getElementById('idProjetoContainer').style.display = 'none';
+        // Esconder mensagem de erro ao abrir modal
+        document.getElementById('errorMessage').style.display = 'none';
+        document.getElementById('errorMessage').innerHTML = '';
     }
     
     function hideModal() {
         document.getElementById('formModal').classList.remove('active');
+
+        //  Esconder e limpar a mensagem de erro ao fechar o modal
+        let errorDiv = document.getElementById('errorMessage');
+        errorDiv.style.display = 'none';
+        errorDiv.innerHTML = '';
     }
+
 
     function getSelected(projeto) {
         const selected = document.querySelector('input[name="selectedprojeto"]:checked');
@@ -119,22 +130,27 @@
 
     function editSelected() {
         const projeto = getSelectedprojeto();
-        if (!{table_name}) {
+        if (!projeto) {
             alert('Por favor, selecione um projeto para editar.');
             return;
         }
 
         fetch(`/api/projeto/${projeto}`)
             .then(response => response.json())
-            .then(user => {
+            .then(projeto => {
                 document.getElementById('modalTitle').textContent = 'Editar projeto';
                 document.getElementById("idProjeto").value = projeto.idProjeto;
                 document.getElementById("codProjeto").value = projeto.codProjeto;
                 document.getElementById("descProjeto").value = projeto.descProjeto;
                 document.getElementById("status").value = projeto.status;
 
-                document.getElementById('idProjeto').readOnly = true; // Bloquear edicao
-
+                document.getElementById('idProjetoContainer').style.display = 'block'; // Exibir o campo ID na edição
+                document.getElementById('idProjeto').readOnly = true; // Bloquear edição do ID
+                document.getElementById('formModal').classList.add('active');
+            })
+            .catch(error => {
+                showError('Erro ao carregar projeto para edição.');
+                console.error('Erro ao carregar projeto:', error);
             });
     }
 
@@ -155,26 +171,43 @@
     }
        
     document.getElementById('projetoForm').addEventListener('submit', function(event) {
-        event.preventDefault();
-        const projeto = document.getElementById('idProjeto').value;
-        const isEdit = document.getElementById('idProjeto').readOnly;  // Se readOnly, é edição
-        const method = isEdit ? 'PUT' : 'POST';
-        const url = isEdit ? `/api/projeto/${projeto}` : '/api/projeto/';
-        const formData = new FormData(this);
-        const data = Object.fromEntries(formData.entries());
-
-        fetch(url, {
-            method: method,
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        }).then(response => response.json())
-        .then(() => {
-            hideModal();
-            loadprojeto();
-        });
+    event.preventDefault();
+    
+    const projeto = document.getElementById('idProjeto').value.trim();
+    const isEdit = document.getElementById('idProjetoContainer').style.display === 'block';  
+    const method = isEdit ? 'PUT' : 'POST';
+    const url = isEdit ? `/api/projeto/${projeto}` : '/api/projeto/';
+    const formData = new FormData(this);
+    const data = Object.fromEntries(formData.entries());
+    
+    fetch(url, {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => { throw new Error(err.error || 'Erro desconhecido'); });
+        }
+        return response.json();
+    })
+    .then(() => {
+        hideModal();
+        loadprojeto();
+    })
+    .catch(error => {
+        showError(error.message);
     });
+});
+
+function showError(message) {
+    let errorDiv = document.getElementById('errorMessage');
+    errorDiv.style.display = 'block'; // 🔥 Agora a mensagem aparece
+    errorDiv.innerHTML = `<strong>Erro:</strong> ${message}`;
+}
+
 </script>
 
 {% endblock %}
