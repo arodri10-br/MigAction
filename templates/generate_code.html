@@ -185,7 +185,13 @@
     e.preventDefault(); // Impede o envio padrão do formulário
 
     const formName = document.getElementById('formName').value.trim();
-    const tablename = document.getElementById('tableSelect').value;
+    const tableName = document.getElementById('tableSelect').value.trim();
+    if (!tableName) {
+        alert("Por favor, selecione uma tabela antes de gerar o código.");
+        return;
+    }
+    const selectedFields = Array.from(document.querySelectorAll('input[name="fields"]:checked'))
+        .map(input => input.value);    
 
     const displayNames = Array.from(document.querySelectorAll('input[name="displayNames"]'))
         .reduce((acc, input) => {

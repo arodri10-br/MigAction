@@ -70,12 +70,14 @@ def generate_source_code():
         selected_fields = data.get('selected_fields')
         displayNames = data.get('displayNames')
         formName = data.get('formName')
+        fieldsPK = data.get('primary_keys')
+        fieldsAI = data.get('autoincrement_fields')
 
         if not table_name or not selected_fields:
             return jsonify({"error": "Tabela ou campos não foram selecionados."}), 400
 
         # Gerar códigos baseados na tabela e campos selecionados
-        html_code, py_code, menu_insert, app_route, dbo_class = generate_form_code(table_name, selected_fields, displayNames, formName)
+        html_code, py_code, menu_insert, app_route, dbo_class = generate_form_code(table_name, selected_fields, displayNames, formName, fieldsPK, fieldsAI)
 
         # Gravar o arquivo html 
         html_path = os.path.join(temp_dir, f"form_{table_name}.html")
@@ -121,9 +123,9 @@ def get_table_fields(table_name):
         return jsonify(success=False, error=str(e)), 500
 
 # Certifique-se de que todas as funções e loops terminem corretamente
-def generate_form_code(table_name, fields, displayNames, formName):
+def generate_form_code(table_name, fields, displayNames, formName, fieldsPK, fieldsAI):
     html_code = generate_html_code(table_name, fields, displayNames, formName)
-    py_code = generate_python_code(table_name, fields)
+    py_code = generate_python_code(table_name, fields, fieldsPK, fieldsAI)
     menu_insert = generate_menu_insert(table_name)
     app_route = generate_app_route(table_name, formName)
     dbo_class = generate_dbo_table(table_name)
@@ -326,7 +328,7 @@ def generate_html_code(table_name, fields, displayNames, formName):
 {{% endblock %}}
 """
 
-def generate_python_code(table_name, fields):
+def generate_python_code(table_name, fields, fieldsPK, fieldsAI):
     fields_definitions = "\n    ".join(
         f"{field} = db.Column(db.String(255))"
         for field in fields
@@ -343,12 +345,27 @@ def generate_python_code(table_name, fields):
         f"{field}=data.get('{field}')"
         for field in fields
     )
-    fields_create = ", ".join(f"{field}=data['{field}']" for field in fields)
+
+    # fields_create = ", ".join(f"{field}=data['{field}']" for field in fields)
+    fields_create_list = []  # Lista para armazenar os campos formatados
+
+    for field in fields:
+        if field not in fieldsAI:  # Os campos que sao do tipo autoincremento nao sao inseridos
+            if field == "dtAtualizacao":
+                fields_create_list.append(f"            {field}=datetime.now(timezone.utc)")
+            elif field == "username":
+                fields_create_list.append(f"            {field}=request.headers.get('username', 'admin')")  
+            else:
+                fields_create_list.append(f"            {field}=data['{field}']") 
+
+    fields_create = ", \n".join(fields_create_list)  # Junta os elementos da lista com ", "
+
     fields_update = "\n        ".join(f"{table_name}.{field}=data.get('{field}', {table_name}.{field})" for field in fields)
 
     return f"""
 from flask import Blueprint, request, jsonify
 from sysdb import SessionLocal, {table_name.capitalize()}
+from datetime import datetime, timezone
 
 bp_{table_name} = Blueprint('{table_name}_api', __name__, url_prefix='/api/{table_name}')
 
@@ -364,7 +381,7 @@ def create_{table_name}():
             return jsonify({{"error": "{fields[0]} já existe."}}), 400
         
         {table_name} = {table_name.capitalize()}(
-            {fields_create}
+{fields_create}
         )
         
         session.add({table_name})
@@ -389,7 +406,7 @@ def get_{table_name}({fields[0]}):
     {table_name} = session.query({table_name.capitalize()}).filter_by({fields[0]}={fields[0]}).first()
     session.close()
     if {table_name}:
-        return jsonify({fields[0]}.to_dict())
+        return jsonify({table_name}.to_dict())
     return jsonify({{"error": "{table_name} não encontrado."}}), 404
 
 # Atualizar um registro da tabela {table_name}

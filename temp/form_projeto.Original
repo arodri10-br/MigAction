@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="page-header">
-    <h1 class="mb-4">usuario</h1>
+    <h1 class="mb-4">projeto</h1>
 </div>
 <div class="toolbar">
     <button onclick="showAddModal()" class="primary">
@@ -25,15 +25,15 @@
         <thead>
             <tr>
                 <th class="radio-cell"></th>
-                <th>username</th>
-                <th>nome</th>
-                <th>email</th>
-                <th>perfil</th>
+                <th>idProjeto</th>
+                <th>codProjeto</th>
+                <th>descProjeto</th>
                 <th>status</th>
-                <th>passw_encrypted</th>
+                <th>username</th>
+                <th>dtAtualizacao</th>
             </tr>
         </thead>
-        <tbody id="usuarioTable">
+        <tbody id="projetoTable">
             <!-- Preenchido dinamicamente -->
         </tbody>
     </table>
@@ -42,42 +42,42 @@
 <!-- Modal de Formulário -->
 <div id="formModal" class="modal">
     <div class="modal-content">
-        <h2 id="modalTitle">Novo "usuario"</h2>
-        <form id="usuarioForm">
+        <h2 id="modalTitle">Novo "projeto"</h2>
+        <form id="projetoForm">
             
             <div class="form-group">
-                <label for="username">id Usuario:</label>
-                <input type="text" id="username" name="username" >
+                <label for="idProjeto">idProjeto:</label>
+                <input type="number" id="idProjeto" name="idProjeto" >
             </div>
         
 
             <div class="form-group">
-                <label for="nome">Nome Completo:</label>
-                <input type="text" id="nome" name="nome" >
+                <label for="codProjeto">codProjeto:</label>
+                <input type="text" id="codProjeto" name="codProjeto" >
             </div>
         
 
             <div class="form-group">
-                <label for="email">Email:</label>
-                <input type="text" id="email" name="email" >
+                <label for="descProjeto">descProjeto:</label>
+                <input type="text" id="descProjeto" name="descProjeto" >
             </div>
         
 
             <div class="form-group">
-                <label for="perfil">Perfil:</label>
-                <input type="text" id="perfil" name="perfil" >
-            </div>
-        
-
-            <div class="form-group">
-                <label for="status">Status:</label>
+                <label for="status">status:</label>
                 <input type="text" id="status" name="status" >
             </div>
         
 
             <div class="form-group">
-                <label for="passw_encrypted">passw_encrypted:</label>
-                <input type="text" id="passw_encrypted" name="passw_encrypted" >
+                <label for="username">username:</label>
+                <input type="text" id="username" name="username" >
+            </div>
+        
+
+            <div class="form-group">
+                <label for="dtAtualizacao">dtAtualizacao:</label>
+                <input type="date" id="dtAtualizacao" name="dtAtualizacao" >
             </div>
         
             <div class="modal-actions">
@@ -90,25 +90,25 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        loadusuario();
+        loadprojeto();
     });
-    function loadusuario() {
-        fetch('/api/usuario/')
+    function loadprojeto() {
+        fetch('/api/projeto/')
             .then(response => response.json())
             .then(data => {
-                const usuarioTable = document.getElementById('usuarioTable');
-                usuarioTable.innerHTML = '';
+                const projetoTable = document.getElementById('projetoTable');
+                projetoTable.innerHTML = '';
                 data.forEach(user => {
-                    const row = usuarioTable.insertRow();
+                    const row = projetoTable.insertRow();
                     const radioCell = row.insertCell();
                     radioCell.className = 'radio-cell';
-                    radioCell.innerHTML = `<input type="radio" name="selectedUser" value="${usuario.username}">`;
-                    row.insertCell().innerText = usuario.username;
-                    row.insertCell().innerText = usuario.nome;
-                    row.insertCell().innerText = usuario.email;
-                    row.insertCell().innerText = usuario.perfil;
-                    row.insertCell().innerText = usuario.status;
-                    row.insertCell().innerText = usuario.passw_encrypted;
+                    radioCell.innerHTML = `<input type="radio" name="selectedUser" value="${projeto.idProjeto}">`;
+                    row.insertCell().innerText = projeto.idProjeto;
+                    row.insertCell().innerText = projeto.codProjeto;
+                    row.insertCell().innerText = projeto.descProjeto;
+                    row.insertCell().innerText = projeto.status;
+                    row.insertCell().innerText = projeto.username;
+                    row.insertCell().innerText = projeto.dtAtualizacao;
 
                 });
             });
@@ -116,11 +116,11 @@
     
 
     function showAddModal() {
-        document.getElementById('modalTitle').textContent = 'Novo usuario';
-        document.getElementById('usuarioForm').reset();
-        document.getElementById('username').value = '';
+        document.getElementById('modalTitle').textContent = 'Novo projeto';
+        document.getElementById('projetoForm').reset();
+        document.getElementById('idProjeto').value = '';
         document.getElementById('formModal').classList.add('active');
-        document.getElementById('username').readOnly = false; // Permitir edicao na inclusao
+        document.getElementById('idProjeto').readOnly = false; // Permitir edicao na inclusao
 
     }
     
@@ -128,56 +128,56 @@
         document.getElementById('formModal').classList.remove('active');
     }
 
-    function getSelected(usuario) {
-        const selected = document.querySelector('input[name="selectedusuario"]:checked');
+    function getSelected(projeto) {
+        const selected = document.querySelector('input[name="selectedprojeto"]:checked');
         return selected ? selected.value : null;
     }
 
     function editSelected() {
-        const usuario = getSelectedusuario();
+        const projeto = getSelectedprojeto();
         if (!{table_name}) {
-            alert('Por favor, selecione um usuario para editar.');
+            alert('Por favor, selecione um projeto para editar.');
             return;
         }
 
-        fetch(`/api/usuario/${usuario}`)
+        fetch(`/api/projeto/${projeto}`)
             .then(response => response.json())
             .then(user => {
-                document.getElementById('modalTitle').textContent = 'Editar usuario';
-                document.getElementById("username").value = usuario.username;
-                document.getElementById("nome").value = usuario.nome;
-                document.getElementById("email").value = usuario.email;
-                document.getElementById("perfil").value = usuario.perfil;
-                document.getElementById("status").value = usuario.status;
-                document.getElementById("passw_encrypted").value = usuario.passw_encrypted;
+                document.getElementById('modalTitle').textContent = 'Editar projeto';
+                document.getElementById("idProjeto").value = projeto.idProjeto;
+                document.getElementById("codProjeto").value = projeto.codProjeto;
+                document.getElementById("descProjeto").value = projeto.descProjeto;
+                document.getElementById("status").value = projeto.status;
+                document.getElementById("username").value = projeto.username;
+                document.getElementById("dtAtualizacao").value = projeto.dtAtualizacao;
 
-                document.getElementById('username').readOnly = true; // Bloquear edicao
+                document.getElementById('idProjeto').readOnly = true; // Bloquear edicao
 
             });
     }
 
     function deleteSelected() {
-        const usuario = getSelectedusuario();
-        if (!usuario) {
-            alert('Por favor, selecione um usuario para excluir.');
+        const projeto = getSelectedprojeto();
+        if (!projeto) {
+            alert('Por favor, selecione um projeto para excluir.');
             return;
         }
 
-        if (confirm('Tem certeza que deseja excluir este usuario?')) {
-            fetch(`/api/usuario/${usuario}`, {
+        if (confirm('Tem certeza que deseja excluir este projeto?')) {
+            fetch(`/api/projeto/${projeto}`, {
                 method: 'DELETE'
             }).then(() => {
-                loadusuario();
+                loadprojeto();
             });
         }
     }
        
-    document.getElementById('usuarioForm').addEventListener('submit', function(event) {
+    document.getElementById('projetoForm').addEventListener('submit', function(event) {
         event.preventDefault();
-        const usuario = document.getElementById('username').value;
-        const isEdit = document.getElementById('username').readOnly;  // Se readOnly, é edição
+        const projeto = document.getElementById('idProjeto').value;
+        const isEdit = document.getElementById('idProjeto').readOnly;  // Se readOnly, é edição
         const method = isEdit ? 'PUT' : 'POST';
-        const url = isEdit ? `/api/usuario/${usuario}` : '/api/usuario/';
+        const url = isEdit ? `/api/projeto/${projeto}` : '/api/projeto/';
         const formData = new FormData(this);
         const data = Object.fromEntries(formData.entries());
 
@@ -190,7 +190,7 @@
         }).then(response => response.json())
         .then(() => {
             hideModal();
-            loadusuario();
+            loadprojeto();
         });
     });
 </script>
