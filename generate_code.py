@@ -124,14 +124,14 @@ def get_table_fields(table_name):
 
 # Certifique-se de que todas as funções e loops terminem corretamente
 def generate_form_code(table_name, fields, displayNames, formName, fieldsPK, fieldsAI):
-    html_code = generate_html_code(table_name, fields, displayNames, formName)
+    html_code = generate_html_code(table_name, fields, displayNames, formName, fieldsPK)
     py_code = generate_python_code(table_name, fields, fieldsPK, fieldsAI)
     menu_insert = generate_menu_insert(table_name)
     app_route = generate_app_route(table_name, formName)
     dbo_class = generate_dbo_table(table_name)
     return html_code, py_code, menu_insert, app_route, dbo_class
 
-def generate_html_code(table_name, fields, displayNames, formName):
+def generate_html_code(table_name, fields, displayNames, formName, fieldsPK):
     """
     Gera o código HTML de um formulário baseado na tabela e campos fornecidos.
 
@@ -162,24 +162,35 @@ def generate_html_code(table_name, fields, displayNames, formName):
     # Obter características dos campos do banco
     field_characteristics = {field['name']: field for field in get_table_columns(table_name)}
     
-    fields_html = "\n".join(
-        f"""
+    #fields_html = "\n".join(
+    #    f"""
+    #        <div class="form-group">
+    #            <label for="{field}">{displayNames.get(field, field)}:</label>
+    #            <input type="{map_field_to_input_type(field_characteristics[field]['type'])}" id="{field}" name="{field}" >
+    #        </div>
+    #    """
+    #    for field in fields
+    #)
+
+    fields_html = []
+
+    for field in fields:
+        if field not in fieldsPK:
+            fields_html.append(f"""
             <div class="form-group">
                 <label for="{field}">{displayNames.get(field, field)}:</label>
                 <input type="{map_field_to_input_type(field_characteristics[field]['type'])}" id="{field}" name="{field}" >
-            </div>
-        """
-        for field in fields
-    )
-    header_table = "\n".join(
-        f"""        <th>{displayNames[field]}</th>"""
-        for field in fields
-    )
-    detail_table = "\n".join(
-        f"""                <th>{field}</th>"""
-        for field in fields
-    )
+            </div>""")
+        else:
+            fields_html.append(f"""
+            <div class="form-group" id="{field}Container" style="display: none;">
+                <label for="{field}">{displayNames.get(field, field)}:</label>
+                <input type="{map_field_to_input_type(field_characteristics[field]['type'])}" id="{field}" name="{field}" readonly>
+            </div>""") 
 
+    fields_html = "\n".join(fields_html)
+    #header_table = "\n".join(f"""        <th>{displayNames[field]}</th>""" for field in fields )
+    detail_table = "\n".join(f"""                <th>{field}</th>""" for field in fields )
     return f"""
 {{% extends "base.html" %}}
 
@@ -226,11 +237,18 @@ def generate_html_code(table_name, fields, displayNames, formName):
                 <button type="button" class="secondary" onclick="hideModal()">Cancelar</button>
                 <button type="submit" class="primary">Salvar</button>
             </div>
+            <div id="errorMessage" class="error-message" style="display: none; color: red; margin-top: 10px;"></div>
         </form>
     </div>
 </div>
 
 <script>
+
+    function getSelected{table_name}() {{
+        const selected = document.querySelector('input[name="selectedUser"]:checked');
+        return selected ? selected.value : null;
+    }}
+
     document.addEventListener('DOMContentLoaded', function() {{
         load{table_name}();
     }});
@@ -244,10 +262,11 @@ def generate_html_code(table_name, fields, displayNames, formName):
                     const row = {table_name}Table.insertRow();
                     const radioCell = row.insertCell();
                     radioCell.className = 'radio-cell';
-                    radioCell.innerHTML = `<input type="radio" name="selectedUser" value="${{{table_name}.{fields[0]}}}">`;
-{ ''.join([f'                    row.insertCell().innerText = {table_name}.{field};{quebraLinha}' for index, field in enumerate(fields)]) }
+                    radioCell.innerHTML = `<input type="radio" name="selectedUser" value="${{user.{fields[0]}}}">`;
+{ ''.join([f'                    row.insertCell().innerText = user.{field};{quebraLinha}' for index, field in enumerate(fields)]) }
                 }});
-            }});
+            }})
+        .catch(error => console.error('Erro ao carregar {table_name}:', error));
     }}
     
 
@@ -256,12 +275,18 @@ def generate_html_code(table_name, fields, displayNames, formName):
         document.getElementById('{table_name}Form').reset();
         document.getElementById('{fields[0]}').value = '';
         document.getElementById('formModal').classList.add('active');
-        document.getElementById('{fields[0]}').readOnly = false; // Permitir edicao na inclusao
-
+        document.getElementById('{fields[0]}Container').style.display = 'none';
+        // Esconder mensagem de erro ao abrir modal
+        document.getElementById('errorMessage').style.display = 'none';
+        document.getElementById('errorMessage').innerHTML = '';
     }}
     
     function hideModal() {{
         document.getElementById('formModal').classList.remove('active');
+        //  Esconder e limpar a mensagem de erro ao fechar o modal
+        let errorDiv = document.getElementById('errorMessage');
+        errorDiv.style.display = 'none';
+        errorDiv.innerHTML = '';
     }}
 
     function getSelected({table_name}) {{
@@ -271,20 +296,25 @@ def generate_html_code(table_name, fields, displayNames, formName):
 
     function editSelected() {{
         const {table_name} = getSelected{table_name}();
-        if (!{{table_name}}) {{
+        if (!{table_name}) {{
             alert('Por favor, selecione um {table_name} para editar.');
             return;
         }}
-
         fetch(`/api/{table_name}/${{{table_name}}}`)
             .then(response => response.json())
-            .then(user => {{
+            .then({table_name} => {{
                 document.getElementById('modalTitle').textContent = 'Editar {table_name}';
 { ''.join([f'                document.getElementById("{field}").value = {table_name}.{field};{quebraLinha}' for index, field in enumerate(fields)]) }
-                document.getElementById('{fields[0]}').readOnly = true; // Bloquear edicao
+{ ''.join([f'                document.getElementById("{field}Container").style.display = "block";{quebraLinha}' for field in fieldsPK])}
+{ ''.join([f'                document.getElementById("{field}").readOnly = true;{quebraLinha}' for field in fieldsPK])}
+                document.getElementById('formModal').classList.add('active');
+            }})
 
+            .catch(error => {{
+                showError('Erro ao carregar {table_name} para edição.');
+                console.error('Erro ao carregar {table_name}:', error);
             }});
-    }}
+        }}
 
     function deleteSelected() {{
         const {table_name} = getSelected{table_name}();
@@ -304,8 +334,8 @@ def generate_html_code(table_name, fields, displayNames, formName):
        
     document.getElementById('{table_name}Form').addEventListener('submit', function(event) {{
         event.preventDefault();
-        const {table_name} = document.getElementById('{fields[0]}').value;
-        const isEdit = document.getElementById('{fields[0]}').readOnly;  // Se readOnly, é edição
+        const {table_name} = document.getElementById('{fields[0]}').value.trim();
+        const isEdit = document.getElementById('{fields[0]}Container').style.display === 'block';  
         const method = isEdit ? 'PUT' : 'POST';
         const url = isEdit ? `/api/{table_name}/${{{table_name}}}` : '/api/{table_name}/';
         const formData = new FormData(this);
@@ -316,13 +346,29 @@ def generate_html_code(table_name, fields, displayNames, formName):
             headers: {{
                 'Content-Type': 'application/json'
             }},
-            body: JSON.stringify(data)
-        }}).then(response => response.json())
-        .then(() => {{
-            hideModal();
-            load{table_name}();
-        }});
+        body: JSON.stringify(data)
+    }})
+    .then(response => {{
+        if (!response.ok) {{
+            return response.json().then(err => {{ throw new Error(err.error || 'Erro desconhecido'); }});
+        }}
+        return response.json();
+    }})
+    .then(() => {{
+        hideModal();
+        loadprojeto();
+    }})
+    .catch(error => {{
+        showError(error.message);
     }});
+}});
+
+function showError(message) {{
+    let errorDiv = document.getElementById('errorMessage');
+    errorDiv.style.display = 'block'; 
+    errorDiv.innerHTML = `<strong>Erro:</strong> ${{message}}`;
+}}
+          
 </script>
 
 {{% endblock %}}
@@ -357,8 +403,7 @@ def generate_python_code(table_name, fields, fieldsPK, fieldsAI):
                 fields_create_list.append(f"            {field}=request.headers.get('username', 'admin')")  
             else:
                 fields_create_list.append(f"            {field}=data['{field}']") 
-
-    fields_create = ", \n".join(fields_create_list)  # Junta os elementos da lista com ", "
+    fields_create = ", \n".join(fields_create_list)  
 
     fields_update = "\n        ".join(f"{table_name}.{field}=data.get('{field}', {table_name}.{field})" for field in fields)
 

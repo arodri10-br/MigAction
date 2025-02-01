@@ -171,20 +171,20 @@
     }
        
     document.getElementById('projetoForm').addEventListener('submit', function(event) {
-    event.preventDefault();
+        event.preventDefault();
     
-    const projeto = document.getElementById('idProjeto').value.trim();
-    const isEdit = document.getElementById('idProjetoContainer').style.display === 'block';  
-    const method = isEdit ? 'PUT' : 'POST';
-    const url = isEdit ? `/api/projeto/${projeto}` : '/api/projeto/';
-    const formData = new FormData(this);
-    const data = Object.fromEntries(formData.entries());
+        const projeto = document.getElementById('idProjeto').value.trim();
+        const isEdit = document.getElementById('idProjetoContainer').style.display === 'block';  
+        const method = isEdit ? 'PUT' : 'POST';
+        const url = isEdit ? `/api/projeto/${projeto}` : '/api/projeto/';
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
     
-    fetch(url, {
-        method: method,
-        headers: {
-            'Content-Type': 'application/json'
-        },
+        fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json'
+            },
         body: JSON.stringify(data)
     })
     .then(response => {
@@ -204,7 +204,7 @@
 
 function showError(message) {
     let errorDiv = document.getElementById('errorMessage');
-    errorDiv.style.display = 'block'; // 🔥 Agora a mensagem aparece
+    errorDiv.style.display = 'block';
     errorDiv.innerHTML = `<strong>Erro:</strong> ${message}`;
 }
 

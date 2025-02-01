@@ -1,3 +1,6 @@
+# Pasta temporaria para geracao de arquivos
+temp/
+
 # Virtual environment
 venv/
 env/
