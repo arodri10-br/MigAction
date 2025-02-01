@@ -102,7 +102,7 @@ def generate_source_code():
 
 @generate_code_bp.route('/fields/<table_name>', methods=['GET'])
 def get_table_fields(table_name):
-    inspector = inspect(engine) 
+    inspector = inspect(engine)
 
     try:
         # Obter as colunas da tabela
@@ -110,14 +110,15 @@ def get_table_fields(table_name):
         fields = [
             {
                 "name": col["name"],
-                "type": str(col["type"])
+                "type": str(col["type"]),
+                "primary_key": col["primary_key"],  
+                "autoincrement": col.get("autoincrement", False)  
             }
             for col in columns
         ]
         return jsonify(fields=fields)
     except Exception as e:
         return jsonify(success=False, error=str(e)), 500
-
 
 # Certifique-se de que todas as funções e loops terminem corretamente
 def generate_form_code(table_name, fields, displayNames, formName):

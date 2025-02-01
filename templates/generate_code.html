@@ -132,6 +132,8 @@
                                     <th>Tipo</th>
                                     <th>Display Name</th>
                                     <th>Incluir</th>
+                                    <th>Chave Primaria</th>
+                                    <th>Auto Incremento</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -152,6 +154,20 @@
                                                 value="${field.name}" 
                                                 checked>
                                         </td>
+                                        <td> 
+                                            <input type="checkbox" class="form-check-input" 
+                                                id="pk_${field.name}" 
+                                                name="primary_keys" 
+                                                value="${field.name}" 
+                                                ${field.primary_key ? "checked disabled" : ""}>  
+                                        </td>
+                                        <td> 
+                                            <input type="checkbox" class="form-check-input" 
+                                                id="ai_${field.name}" 
+                                                name="autoincrement_fields" 
+                                                value="${field.name}" 
+                                                ${field.autoincrement ? "checked disabled" : ""}>  
+                                        </td>
                                     </tr>
                                 `).join('')}
                             </tbody>
@@ -170,11 +186,20 @@
 
     const formName = document.getElementById('formName').value.trim();
     const tablename = document.getElementById('tableSelect').value;
-    const selectedFields = Array.from(document.querySelectorAll('input[name="fields"]:checked')).map(input => input.value);
-    const displayNames = Array.from(document.querySelectorAll('input[name="displayNames"]')).reduce((acc, input) => {
-        acc[input.id.replace('displayName_', '')] = input.value.trim();
-        return acc;
-    }, {});
+
+    const displayNames = Array.from(document.querySelectorAll('input[name="displayNames"]'))
+        .reduce((acc, input) => {
+            acc[input.id.replace('displayName_', '')] = input.value.trim();
+            return acc;
+        }, {});
+
+    // Captura os campos marcados como PK
+    const primaryKeys = Array.from(document.querySelectorAll('input[name="primary_keys"]:checked'))
+        .map(input => input.value);
+
+    // Captura os campos marcados como AutoIncrement
+    const autoincrementFields = Array.from(document.querySelectorAll('input[name="autoincrement_fields"]:checked'))
+        .map(input => input.value);
 
     if (!formName || selectedFields.length === 0) {
         alert('Por favor, preencha o nome do formulário e selecione ao menos um campo.');
@@ -182,10 +207,12 @@
     }
 
     const data = {
-        table_name:tablename,
+        table_name: tableName,
         formName,
         selected_fields: selectedFields,
-        displayNames
+        displayNames,
+        primary_keys: primaryKeys,
+        autoincrement_fields: autoincrementFields 
     };
 
     fetch('/generate-code', {
