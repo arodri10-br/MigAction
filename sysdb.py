@@ -149,8 +149,8 @@ class SuppDataDet(Base):
 
     IdProjeto = Column(Integer, ForeignKey('projeto.idProjeto'), primary_key=True)
     codSupData = Column(String(10), ForeignKey('suppdataconfig.codSupData'), primary_key=True)
-    Chave1 = Column(String(20), nullable=False)
-    Chave2 = Column(String(20))
+    Chave1 = Column(String(20), nullable=False, primary_key=True)
+    Chave2 = Column(String(20), nullable=False, primary_key=True)
     Valor1 = Column(String(20))
     Valor2 = Column(String(20))
     Valor3 = Column(String(20))

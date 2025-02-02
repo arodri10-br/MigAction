@@ -4,4 +4,16 @@
 {% block content %}
 <h1>Bem-vindo !</h1>
 <p>Este portal se destina a configuração e execução de projetos de migração de dados.</p>
+
+{% if session %}
+    <h2>Session Data:</h2>
+    <ul>
+    {% for key, value in session.items() %}
+        <li><strong>{{ key }}:</strong> {{ value }}</li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No session data available.</p>
+{% endif %}
+
 {% endblock %}

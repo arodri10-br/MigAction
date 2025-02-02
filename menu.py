@@ -2,6 +2,7 @@
 menu_items = [
     {"name": "Home", "url": "/"},
     {"name": "Config. Sup. Data", "url": "/suppdataconfig"},
+    {"name": "Detalhe Sup. Data", "url": "/suppdatadet"},
     {"name": "Projetos", "url": "/projeto"},
     {"name": "Usuários", "url": "/users"},
     {"name": "Gerar Form", "url": "/generate-code"},

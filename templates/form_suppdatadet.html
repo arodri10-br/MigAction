@@ -1,0 +1,331 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="mb-4">suppdatadet</h1>
+</div>
+<div class="toolbar">
+    <button onclick="showAddModal()" class="primary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Novo
+    </button>
+    <button onclick="editSelected()" class="primary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+        Editar
+    </button>
+    <button onclick="deleteSelected()" class="secondary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        Excluir
+    </button>
+</div>
+
+<div class="grid-container">
+    <table class="grid">
+        <thead>
+            <tr>
+                <th class="radio-cell"></th>
+                <th>IdProjeto</th>
+                <th>codSupData</th>
+                <th>Chave1</th>
+                <th>Chave2</th>
+                <th>Valor1</th>
+                <th>Valor2</th>
+                <th>Valor3</th>
+                <th>Valor4</th>
+                <th>Valor5</th>
+                <th>Valor6</th>
+                <th>Valor7</th>
+                <th>Valor8</th>
+                <th>Valor9</th>
+                <th>Valor10</th>
+            </tr>
+        </thead>
+        <tbody id="suppdatadetTable">
+            <!-- Preenchido dinamicamente -->
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal de Formulário -->
+<div id="formModal" class="modal">
+    <div class="modal-content">
+        <h2 id="modalTitle">Novo "suppdatadet"</h2>
+        <form id="suppdatadetForm">
+            
+            <div class="form-group" id="IdProjetoContainer">
+                <label for="IdProjeto">IdProjeto:</label>
+                <input type="number" id="IdProjeto" name="IdProjeto" value="{{ session.idProjeto }}" readonly>
+            </div>
+            
+            <div class="form-group" id="codSupDataContainer">
+                <label for="codSupData">codSupData:</label>
+                <input type="text" id="codSupData" name="codSupData" value ="StatusProj" readonly>
+            </div>
+
+            <div class="form-group" id="Chave1Container">
+                <label for="Chave1">Chave1:</label>
+                <input type="text" id="Chave1" name="Chave1" readonly>
+            </div>
+
+            <div class="form-group" id="Chave2Container">
+                <label for="Chave2">Chave2:</label>
+                <input type="text" id="Chave2" name="Chave2" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="Valor1">Valor1:</label>
+                <input type="text" id="Valor1" name="Valor1" >
+            </div>
+
+            <div class="form-group">
+                <label for="Valor2">Valor2:</label>
+                <input type="text" id="Valor2" name="Valor2" >
+            </div>
+
+            <div class="form-group">
+                <label for="Valor3">Valor3:</label>
+                <input type="text" id="Valor3" name="Valor3" >
+            </div>
+
+            <div class="form-group">
+                <label for="Valor4">Valor4:</label>
+                <input type="text" id="Valor4" name="Valor4" >
+            </div>
+
+            <div class="form-group">
+                <label for="Valor5">Valor5:</label>
+                <input type="text" id="Valor5" name="Valor5" >
+            </div>
+
+            <div class="form-group">
+                <label for="Valor6">Valor6:</label>
+                <input type="text" id="Valor6" name="Valor6" >
+            </div>
+
+            <div class="form-group">
+                <label for="Valor7">Valor7:</label>
+                <input type="text" id="Valor7" name="Valor7" >
+            </div>
+
+            <div class="form-group">
+                <label for="Valor8">Valor8:</label>
+                <input type="text" id="Valor8" name="Valor8" >
+            </div>
+
+            <div class="form-group">
+                <label for="Valor9">Valor9:</label>
+                <input type="text" id="Valor9" name="Valor9" >
+            </div>
+
+            <div class="form-group">
+                <label for="Valor10">Valor10:</label>
+                <input type="text" id="Valor10" name="Valor10" >
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="secondary" onclick="hideModal()">Cancelar</button>
+                <button type="submit" class="primary">Salvar</button>
+            </div>
+            <div id="errorMessage" class="error-message" style="display: none; color: red; margin-top: 10px;"></div>
+        </form>
+    </div>
+</div>
+
+<script>
+
+    function getSelectedsuppdatadet() {
+        const selected = document.querySelector('input[name="selectedUser"]:checked');
+        if (!selected) {
+            return null;
+        }
+        // Divide a string pelo separador para obter os 4 valores
+        const keyParts = selected.value.split('|');
+        if (keyParts.length !== 4) {
+            return null;
+        }
+        return {
+            IdProjeto: keyParts[0],
+            codSupData: keyParts[1],
+            Chave1: keyParts[2],
+            Chave2: keyParts[3]
+        };
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadsuppdatadet();
+    });
+    function loadsuppdatadet() {
+        fetch('/api/suppdatadet/')
+            .then(response => response.json())
+            .then(data => {
+                const suppdatadetTable = document.getElementById('suppdatadetTable');
+                suppdatadetTable.innerHTML = '';
+                data.forEach(user => {
+                    const row = suppdatadetTable.insertRow();
+                    const radioCell = row.insertCell();
+                    radioCell.className = 'radio-cell';
+                    radioCell.innerHTML = `<input type="radio" name="selectedUser" value="${user.IdProjeto}|${user.codSupData}|${user.Chave1}|${user.Chave2}">`;
+                    row.insertCell().innerText = user.IdProjeto;
+                    row.insertCell().innerText = user.codSupData;
+                    row.insertCell().innerText = user.Chave1;
+                    row.insertCell().innerText = user.Chave2;
+                    row.insertCell().innerText = user.Valor1;
+                    row.insertCell().innerText = user.Valor2;
+                    row.insertCell().innerText = user.Valor3;
+                    row.insertCell().innerText = user.Valor4;
+                    row.insertCell().innerText = user.Valor5;
+                    row.insertCell().innerText = user.Valor6;
+                    row.insertCell().innerText = user.Valor7;
+                    row.insertCell().innerText = user.Valor8;
+                    row.insertCell().innerText = user.Valor9;
+                    row.insertCell().innerText = user.Valor10;
+
+                });
+            })
+        .catch(error => console.error('Erro ao carregar suppdatadet:', error));
+    }
+    
+
+    function showAddModal() {
+        document.getElementById('modalTitle').textContent = 'Novo suppdatadet';
+        document.getElementById('suppdatadetForm').reset();
+        //document.getElementById('IdProjeto').value = '';
+        document.getElementById('formModal').classList.add('active');
+        //document.getElementById('IdProjetoContainer').style.display = 'none';
+        document.getElementById('Chave1').value = '';
+        document.getElementById('Chave2').value = '';
+        document.getElementById("Chave1").readOnly = false;
+        document.getElementById("Chave2").readOnly = false;
+        
+        // Esconder mensagem de erro ao abrir modal
+        document.getElementById('errorMessage').style.display = 'none';
+        document.getElementById('errorMessage').innerHTML = '';
+    }
+    
+    function hideModal() {
+        document.getElementById('formModal').classList.remove('active');
+        //  Esconder e limpar a mensagem de erro ao fechar o modal
+        let errorDiv = document.getElementById('errorMessage');
+        errorDiv.style.display = 'none';
+        errorDiv.innerHTML = '';
+    }
+
+//    function getSelected(suppdatadet) {
+//        const selected = document.querySelector('input[name="selectedsuppdatadet"]:checked');
+//        return selected ? selected.value : null;
+//    }
+
+    function editSelected() {
+        const key = getSelectedsuppdatadet();
+        if (!key) {
+            alert('Por favor, selecione uma linha para editar.');
+            return;
+        }
+        
+        const url = `/api/suppdatadet/${key.IdProjeto}/${key.codSupData}/${key.Chave1}/${key.Chave2}`;
+        fetch(url)
+            .then(response => response.json())
+            .then(suppdatadet => {
+                document.getElementById('modalTitle').textContent = 'Editar Base de Dados Suplementar';
+                document.getElementById("IdProjeto").value = suppdatadet.IdProjeto;
+                document.getElementById("codSupData").value = suppdatadet.codSupData;
+                document.getElementById("Chave1").value = suppdatadet.Chave1;
+                document.getElementById("Chave2").value = suppdatadet.Chave2;
+                document.getElementById("Valor1").value = suppdatadet.Valor1;
+                document.getElementById("Valor2").value = suppdatadet.Valor2;
+                document.getElementById("Valor3").value = suppdatadet.Valor3;
+                document.getElementById("Valor4").value = suppdatadet.Valor4;
+                document.getElementById("Valor5").value = suppdatadet.Valor5;
+                document.getElementById("Valor6").value = suppdatadet.Valor6;
+                document.getElementById("Valor7").value = suppdatadet.Valor7;
+                document.getElementById("Valor8").value = suppdatadet.Valor8;
+                document.getElementById("Valor9").value = suppdatadet.Valor9;
+                document.getElementById("Valor10").value = suppdatadet.Valor10;
+
+                document.getElementById("IdProjetoContainer").style.display = "block";
+                document.getElementById("codSupDataContainer").style.display = "block";
+                document.getElementById("Chave1Container").style.display = "block";
+                document.getElementById("Chave2Container").style.display = "block";
+
+                //document.getElementById("IdProjeto").readOnly = true;
+                //document.getElementById("codSupData").readOnly = true;
+                //document.getElementById("Chave1").readOnly = true;
+                //document.getElementById("Chave2").readOnly = true;
+
+                document.getElementById('formModal').classList.add('active');
+            })
+
+            .catch(error => {
+                showError('Erro ao carregar suppdatadet para edição.');
+                console.error('Erro ao carregar suppdatadet:', error);
+            });
+        }
+
+    function deleteSelected() {
+        const suppdatadet = getSelectedsuppdatadet();
+        if (!suppdatadet) {
+            alert('Por favor, selecione um suppdatadet para excluir.');
+            return;
+        }
+
+        if (confirm('Tem certeza que deseja excluir este suppdatadet?')) {
+            fetch(`/api/suppdatadet/${suppdatadet}`, {
+                method: 'DELETE'
+            }).then(() => {
+                loadsuppdatadet();
+            });
+        }
+    }
+       
+    document.getElementById('suppdatadetForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const suppdatadet = document.getElementById('IdProjeto').value.trim();
+        const isEdit = document.getElementById('IdProjeto').readOnly === true;  
+        const method = isEdit ? 'PUT' : 'POST';
+
+        let url = '/api/suppdatadet/';
+        if (isEdit) {
+            const idProjeto = document.getElementById('IdProjeto').value.trim();
+            const codSupData = document.getElementById('codSupData').value.trim();
+            const chave1 = document.getElementById('Chave1').value.trim();
+            // Se o campo Chave2 estiver vazio, use string vazia
+            const chave2 = document.getElementById('Chave2').value.trim() || '';
+
+            // Construa a URL com os 4 parâmetros, utilizando encodeURIComponent para segurança
+            url = `/api/suppdatadet/${encodeURIComponent(idProjeto)}/${encodeURIComponent(codSupData)}/${encodeURIComponent(chave1)}/${encodeURIComponent(chave2)}`;
+        }        
+        
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+
+        fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => { throw new Error(err.error || 'Erro desconhecido'); });
+        }
+        return response.json();
+    })
+    .then(() => {
+        hideModal();
+        loadsuppdatadet();
+    })
+    .catch(error => {
+        showError(error.message);
+    });
+});
+
+function showError(message) {
+    let errorDiv = document.getElementById('errorMessage');
+    errorDiv.style.display = 'block'; 
+    errorDiv.innerHTML = `<strong>Erro:</strong> ${message}`;
+}
+          
+</script>
+
+{% endblock %}
