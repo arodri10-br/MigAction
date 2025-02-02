@@ -72,3 +72,7 @@ def logout():
     """Remove os dados da sessão e redireciona para a tela de login."""
     session.clear()
     return redirect(url_for('routes.login'))
+
+@bp_routes.route('/suppdataconfig')
+def call_Suppdataconfig():
+    return render_template('form_suppdataconfig.html', menu_items=menu_items)

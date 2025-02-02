@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="mb-4">Configuração de dados Adicionais</h1>
+</div>
+<div class="toolbar">
+    <button onclick="showAddModal()" class="primary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+        Novo
+    </button>
+    <button onclick="editSelected()" class="primary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
+        </svg>
+        Editar
+    </button>
+    <button onclick="deleteSelected()" class="secondary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        </svg>
+        Excluir
+    </button>
+</div>
+
+<div class="grid-container">
+    <table class="grid">
+        <thead>
+            <tr>
+                <th class="radio-cell"></th>
+                <th>codSupData</th>
+                <th>DescSupData</th>
+                <th>Chave1</th>
+                <th>Chave2</th>
+                <th>Campo1</th>
+                <th>Campo2</th>
+                <th>Campo3</th>
+                <th>Campo4</th>
+                <th>Campo5</th>
+                <th>Campo6</th>
+                <th>Campo7</th>
+                <th>Campo8</th>
+                <th>Campo9</th>
+                <th>Campo10</th>
+                <th>Tipo1</th>
+                <th>Tipo2</th>
+                <th>Tipo3</th>
+                <th>Tipo4</th>
+                <th>Tipo5</th>
+                <th>Tipo6</th>
+                <th>Tipo7</th>
+                <th>Tipo8</th>
+                <th>Tipo9</th>
+                <th>Tipo10</th>
+                <th>PermNull1</th>
+                <th>PermNull2</th>
+                <th>PermNull3</th>
+                <th>PermNull4</th>
+                <th>PermNull5</th>
+                <th>PermNull6</th>
+                <th>PermNull7</th>
+                <th>PermNull8</th>
+                <th>PermNull9</th>
+                <th>PermNull10</th>
+            </tr>
+        </thead>
+        <tbody id="suppdataconfigTable">
+            <!-- Preenchido dinamicamente -->
+        </tbody>
+    </table>
+</div>
+
+<!-- Inclusão do Modal separado -->
+{% include "modal_suppdataconfig.html" %}
+
+<script>
+    function getSelectedsuppdataconfig() {
+        const selected = document.querySelector('input[name="selectedUser"]:checked');
+        return selected ? selected.value : null;
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadsuppdataconfig();
+    });
+    
+    function loadsuppdataconfig() {
+        fetch('/api/suppdataconfig/')
+            .then(response => response.json())
+            .then(data => {
+                const suppdataconfigTable = document.getElementById('suppdataconfigTable');
+                suppdataconfigTable.innerHTML = '';
+                data.forEach(user => {
+                    const row = suppdataconfigTable.insertRow();
+                    const radioCell = row.insertCell();
+                    radioCell.className = 'radio-cell';
+                    radioCell.innerHTML = `<input type="radio" name="selectedUser" value="${user.codSupData}">`;
+                    row.insertCell().innerText = user.codSupData;
+                    row.insertCell().innerText = user.DescSupData;
+                    row.insertCell().innerText = user.Chave1;
+                    row.insertCell().innerText = user.Chave2;
+                    row.insertCell().innerText = user.Campo1;
+                    row.insertCell().innerText = user.Campo2;
+                    row.insertCell().innerText = user.Campo3;
+                    row.insertCell().innerText = user.Campo4;
+                    row.insertCell().innerText = user.Campo5;
+                    row.insertCell().innerText = user.Campo6;
+                    row.insertCell().innerText = user.Campo7;
+                    row.insertCell().innerText = user.Campo8;
+                    row.insertCell().innerText = user.Campo9;
+                    row.insertCell().innerText = user.Campo10;
+                    row.insertCell().innerText = user.Tipo1;
+                    row.insertCell().innerText = user.Tipo2;
+                    row.insertCell().innerText = user.Tipo3;
+                    row.insertCell().innerText = user.Tipo4;
+                    row.insertCell().innerText = user.Tipo5;
+                    row.insertCell().innerText = user.Tipo6;
+                    row.insertCell().innerText = user.Tipo7;
+                    row.insertCell().innerText = user.Tipo8;
+                    row.insertCell().innerText = user.Tipo9;
+                    row.insertCell().innerText = user.Tipo10;
+                    row.insertCell().innerText = user.PermNull1;
+                    row.insertCell().innerText = user.PermNull2;
+                    row.insertCell().innerText = user.PermNull3;
+                    row.insertCell().innerText = user.PermNull4;
+                    row.insertCell().innerText = user.PermNull5;
+                    row.insertCell().innerText = user.PermNull6;
+                    row.insertCell().innerText = user.PermNull7;
+                    row.insertCell().innerText = user.PermNull8;
+                    row.insertCell().innerText = user.PermNull9;
+                    row.insertCell().innerText = user.PermNull10;
+                });
+            })
+            .catch(error => console.error('Erro ao carregar suppdataconfig:', error));
+    }
+    
+    function showAddModal() {
+        document.getElementById('modalTitle').textContent = 'Novo suppdataconfig';
+        document.getElementById('suppdataconfigForm').reset();
+        document.getElementById('codSupData').value = '';
+        document.getElementById('formModal').classList.add('active');
+        // document.getElementById('codSupDataContainer').style.display = 'none';
+        // Esconder mensagem de erro ao abrir modal
+        document.getElementById('errorMessage').style.display = 'none';
+        document.getElementById('errorMessage').innerHTML = '';
+    }
+    
+    function hideModal() {
+        document.getElementById('formModal').classList.remove('active');
+        // Esconder e limpar a mensagem de erro ao fechar o modal
+        let errorDiv = document.getElementById('errorMessage');
+        errorDiv.style.display = 'none';
+        errorDiv.innerHTML = '';
+    }
+
+    function getSelected(suppdataconfig) {
+        const selected = document.querySelector('input[name="selectedsuppdataconfig"]:checked');
+        return selected ? selected.value : null;
+    }
+
+    function editSelected() {
+        const suppdataconfig = getSelectedsuppdataconfig();
+        if (!suppdataconfig) {
+            alert('Por favor, selecione um suppdataconfig para editar.');
+            return;
+        }
+        fetch(`/api/suppdataconfig/${suppdataconfig}`)
+            .then(response => response.json())
+            .then(suppdataconfig => {
+                document.getElementById('modalTitle').textContent = 'Editar suppdataconfig';
+                document.getElementById("codSupData").value = suppdataconfig.codSupData;
+                document.getElementById("DescSupData").value = suppdataconfig.DescSupData;
+                document.getElementById("Chave1").value = suppdataconfig.Chave1;
+                document.getElementById("Chave2").value = suppdataconfig.Chave2;
+                // Aqui você precisará popular os demais campos do modal conforme necessário...
+                document.getElementById("codSupDataContainer").style.display = "block";
+                document.getElementById("codSupData").readOnly = true;
+                document.getElementById('formModal').classList.add('active');
+            })
+            .catch(error => {
+                showError('Erro ao carregar suppdataconfig para edição.');
+                console.error('Erro ao carregar suppdataconfig:', error);
+            });
+    }
+
+    function deleteSelected() {
+        const suppdataconfig = getSelectedsuppdataconfig();
+        if (!suppdataconfig) {
+            alert('Por favor, selecione um suppdataconfig para excluir.');
+            return;
+        }
+        if (confirm('Tem certeza que deseja excluir este suppdataconfig?')) {
+            fetch(`/api/suppdataconfig/${suppdataconfig}`, { method: 'DELETE' })
+                .then(() => {
+                    loadsuppdataconfig();
+                });
+        }
+    }
+
+    document.getElementById('suppdataconfigForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const suppdataconfig = document.getElementById('codSupData').value.trim();
+        const isEdit = document.getElementById('codSupDataContainer').style.display === 'block';  
+        const method = isEdit ? 'PUT' : 'POST';
+        const url = isEdit ? `/api/suppdataconfig/${suppdataconfig}` : '/api/suppdataconfig/';
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+        fetch(url, {
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => { throw new Error(err.error || 'Erro desconhecido'); });
+            }
+            return response.json();
+        })
+        .then(() => {
+            hideModal();
+            loadsuppdataconfig();
+        })
+        .catch(error => {
+            showError(error.message);
+        });
+    });
+
+    function showError(message) {
+        let errorDiv = document.getElementById('errorMessage');
+        errorDiv.style.display = 'block'; 
+        errorDiv.innerHTML = `<strong>Erro:</strong> ${message}`;
+    }
+</script>
+{% endblock %}

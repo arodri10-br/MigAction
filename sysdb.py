@@ -1,7 +1,8 @@
-from sqlalchemy import create_engine, Column, String, Integer, Date, ForeignKey, Text
+from sqlalchemy import create_engine, Column, String, Integer, Date, ForeignKey, Text, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from cryptography.fernet import Fernet
+from datetime import date
 
 Base = declarative_base()
 
@@ -65,38 +66,80 @@ class SuppDataConfig(Base):
     __tablename__ = 'suppdataconfig'
 
     codSupData = Column(String(10), primary_key=True, unique=True)
-    DescSupData = Column(String(15), nullable=False)
+    DescSupData = Column(String(30), nullable=False)
     Chave1 = Column(String(15), nullable=False)
-    Chave2 = Column(String(15), nullable=False)
-    Campo1 = Column(String(15), nullable=False)
-    Campo2 = Column(String(15), nullable=False) 
-    Campo3 = Column(String(15), nullable=False)
-    Campo4 = Column(String(15), nullable=False)
-    Campo5 = Column(String(15), nullable=False)
-    Campo6 = Column(String(15), nullable=False)
-    Campo7 = Column(String(15), nullable=False)
-    Campo8 = Column(String(15), nullable=False)
-    Campo9 = Column(String(15), nullable=False)
-    Campo10 = Column(String(15), nullable=False)
+    Chave2 = Column(String(15), nullable=True)
+    Campo1 = Column(String(15), nullable=True)
+    Campo2 = Column(String(15), nullable=True) 
+    Campo3 = Column(String(15), nullable=True)
+    Campo4 = Column(String(15), nullable=True)
+    Campo5 = Column(String(15), nullable=True)
+    Campo6 = Column(String(15), nullable=True)
+    Campo7 = Column(String(15), nullable=True)
+    Campo8 = Column(String(15), nullable=True)
+    Campo9 = Column(String(15), nullable=True)
+    Campo10 = Column(String(15), nullable=True)
+    Tipo1 = Column(String(2), nullable=True)
+    Tipo2 = Column(String(2), nullable=True)
+    Tipo3 = Column(String(2), nullable=True)
+    Tipo4 = Column(String(2), nullable=True)
+    Tipo5 = Column(String(2), nullable=True)
+    Tipo6 = Column(String(2), nullable=True)
+    Tipo7 = Column(String(2), nullable=True)
+    Tipo8 = Column(String(2), nullable=True)
+    Tipo9 = Column(String(2), nullable=True)
+    Tipo10 = Column(String(2), nullable=True)
+    PermNull1 = Column(Boolean, default=True)
+    PermNull2 = Column(Boolean, default=True)
+    PermNull3 = Column(Boolean, default=True)
+    PermNull4 = Column(Boolean, default=True)
+    PermNull5 = Column(Boolean, default=True)
+    PermNull6 = Column(Boolean, default=True)
+    PermNull7 = Column(Boolean, default=True)
+    PermNull8 = Column(Boolean, default=True)
+    PermNull9 = Column(Boolean, default=True)
+    PermNull10 = Column(Boolean, default=True)
     username = Column(String(10), ForeignKey('usuario.username'), nullable=False)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.dtAtualizacao = date.today()
     dtAtualizacao = Column(Date)
-
     def to_dict(self):
         return {
             "codSupData": self.codSupData,
             "DescSupData": self.DescSupData,
             "Chave1": self.Chave1,
             "Chave2": self.Chave2,
-            "Campo1": self.Chave1,
-            "Campo2": self.Chave2,
-            "Campo3": self.Chave3,
-            "Campo4": self.Chave4,
-            "Campo5": self.Chave5,
-            "Campo6": self.Chave6,
-            "Campo7": self.Chave7,
-            "Campo8": self.Chave8,
-            "Campo9": self.Chave9,
-            "Campo10": self.Chave10,
+            "Campo1": self.Campo1,
+            "Campo2": self.Campo2,
+            "Campo3": self.Campo3,
+            "Campo4": self.Campo4,
+            "Campo5": self.Campo5,
+            "Campo6": self.Campo6,
+            "Campo7": self.Campo7,
+            "Campo8": self.Campo8,
+            "Campo9": self.Campo9,
+            "Campo10": self.Campo10,
+            "Tipo1": self.Tipo1,
+            "Tipo2": self.Tipo2,
+            "Tipo3": self.Tipo3,
+            "Tipo4": self.Tipo4,
+            "Tipo5": self.Tipo5,
+            "Tipo6": self.Tipo6,
+            "Tipo7": self.Tipo7,
+            "Tipo8": self.Tipo8,
+            "Tipo9": self.Tipo9,
+            "Tipo10": self.Tipo10,
+            "PermNull1": self.PermNull1,
+            "PermNull2": self.PermNull2,
+            "PermNull3": self.PermNull3,
+            "PermNull4": self.PermNull4,
+            "PermNull5": self.PermNull5,
+            "PermNull6": self.PermNull6,
+            "PermNull7": self.PermNull7,
+            "PermNull8": self.PermNull8,
+            "PermNull9": self.PermNull9,
+            "PermNull10": self.PermNull10,
             "username": self.username,
             "dtAtualizacao": self.dtAtualizacao.isoformat() if self.dtAtualizacao else None,
         }
