@@ -15,7 +15,11 @@ def create_suppdataconfig():
         if session.query(SuppDataConfig).filter_by(codSupData=data['codSupData']).first():
             session.close()
             return jsonify({"error": "codSupData já existe."}), 400
-        
+
+        checkbox_keys = ['PermNull1', 'PermNull2', 'PermNull3', 'PermNull4', 'PermNull5','PermNull6', 'PermNull7', 'PermNull8', 'PermNull9', 'PermNull10']
+        for key in checkbox_keys:
+            data[key] = True if data.get(key, 'False') == 'True' else False
+                    
         suppdataconfig = SuppDataConfig(
             codSupData=data['codSupData'], 
             DescSupData=data['DescSupData'], 
@@ -50,7 +54,9 @@ def create_suppdataconfig():
             PermNull7=data['PermNull7'], 
             PermNull8=data['PermNull8'], 
             PermNull9=data['PermNull9'], 
-            PermNull10=data['PermNull10']
+            PermNull10=data['PermNull10'],
+            username=request.headers.get('username', 'admin'),
+            dtAtualizacao=datetime.now(timezone.utc)
         )
         
         session.add(suppdataconfig)
@@ -58,6 +64,7 @@ def create_suppdataconfig():
         session.close()
         return jsonify(success=True), 200
     except Exception as e:
+        print(f"Erro POST suppdataconfig: {str(e)}")
         return jsonify(success=False, error=str(e)), 500
 
 # Obter suppdataconfig
@@ -89,6 +96,11 @@ def update_suppdataconfig(codSupData):
             return jsonify({"error": "Registro não encontrado."}), 404
         
         data = request.json
+
+        checkbox_keys = ['PermNull1', 'PermNull2', 'PermNull3', 'PermNull4', 'PermNull5','PermNull6', 'PermNull7', 'PermNull8', 'PermNull9', 'PermNull10']
+        for key in checkbox_keys:
+            data[key] = True if data.get(key, 'False') == 'True' else False
+
         suppdataconfig.codSupData=data.get('codSupData', suppdataconfig.codSupData)
         suppdataconfig.DescSupData=data.get('DescSupData', suppdataconfig.DescSupData)
         suppdataconfig.Chave1=data.get('Chave1', suppdataconfig.Chave1)

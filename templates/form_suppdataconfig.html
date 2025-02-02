@@ -46,7 +46,7 @@
                 <th>Campo8</th>
                 <th>Campo9</th>
                 <th>Campo10</th>
-                <th>Tipo1</th>
+                <th >Tipo1</th>
                 <th>Tipo2</th>
                 <th>Tipo3</th>
                 <th>Tipo4</th>
@@ -136,13 +136,17 @@
             })
             .catch(error => console.error('Erro ao carregar suppdataconfig:', error));
     }
-    
+
     function showAddModal() {
         document.getElementById('modalTitle').textContent = 'Novo suppdataconfig';
         document.getElementById('suppdataconfigForm').reset();
         document.getElementById('codSupData').value = '';
         document.getElementById('formModal').classList.add('active');
-        // document.getElementById('codSupDataContainer').style.display = 'none';
+
+        // Em modo de inclusão, o campo deve ser exibido e liberado para digitação
+        document.getElementById('codSupDataContainer').style.display = 'block';  
+        document.getElementById('codSupData').readOnly = false;
+
         // Esconder mensagem de erro ao abrir modal
         document.getElementById('errorMessage').style.display = 'none';
         document.getElementById('errorMessage').innerHTML = '';
@@ -178,7 +182,21 @@
                 // Aqui você precisará popular os demais campos do modal conforme necessário...
                 document.getElementById("codSupDataContainer").style.display = "block";
                 document.getElementById("codSupData").readOnly = true;
+
                 document.getElementById('formModal').classList.add('active');
+                //
+                document.getElementById("Campo1").value = suppdataconfig.Campo1;
+                document.getElementById("Campo2").value = suppdataconfig.Campo2;
+                document.getElementById("Campo3").value = suppdataconfig.Campo3;
+                document.getElementById("Campo4").value = suppdataconfig.Campo4;
+                document.getElementById("Campo5").value = suppdataconfig.Campo5;
+                document.getElementById("Campo6").value = suppdataconfig.Campo6;
+                document.getElementById("Campo7").value = suppdataconfig.Campo7;
+                document.getElementById("Campo8").value = suppdataconfig.Campo8;
+                document.getElementById("Campo9").value = suppdataconfig.Campo9;
+                document.getElementById("Campo10").value = suppdataconfig.Campo10;
+
+                //document.getElementById("Campo1").value = suppdataconfig.Campo1;
             })
             .catch(error => {
                 showError('Erro ao carregar suppdataconfig para edição.');
@@ -203,11 +221,14 @@
     document.getElementById('suppdataconfigForm').addEventListener('submit', function(event) {
         event.preventDefault();
         const suppdataconfig = document.getElementById('codSupData').value.trim();
-        const isEdit = document.getElementById('codSupDataContainer').style.display === 'block';  
+        const isEdit = document.getElementById('codSupData').readOnly;  
         const method = isEdit ? 'PUT' : 'POST';
         const url = isEdit ? `/api/suppdataconfig/${suppdataconfig}` : '/api/suppdataconfig/';
         const formData = new FormData(this);
         const data = Object.fromEntries(formData.entries());
+        // Aqui você precisará tratar os campos de checkbox que não são enviados no FormData
+        const checkboxNames = ['PermNull1', 'PermNull2', 'PermNull3', 'PermNull4', 'PermNull5', 'PermNull6', 'PermNull7', 'PermNull8', 'PermNull9', 'PermNull10'];
+        checkboxNames.forEach(name => { if (!(name in data)) { data[name] = false; }});
         fetch(url, {
             method: method,
             headers: { 'Content-Type': 'application/json' },

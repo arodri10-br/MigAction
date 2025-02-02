@@ -4,7 +4,7 @@
       <form id="suppdataconfigForm">
         <!-- Linha 1: Código e Descrição -->
         <div class="form-group">
-          <div class="field">
+          <div class="field" id="codSupDataContainer" style="display: none;">
             <label for="codSupData">Cod. SupData:</label>
             <input type="text" id="codSupData" name="codSupData" readonly maxlength="10">
           </div>
@@ -44,15 +44,17 @@
               <option value="N">Numérico</option>
               <option value="D">Data</option>
             </select>
-            <input type="checkbox" id="PermNull1" name="PermNull1">
-            
+            <input type="hidden" name="PermNull1" value="False">
+            <input type="checkbox" id="PermNull1" name="PermNull1" value="True">
+                        
             <input type="text" id="Campo2" name="Campo2" maxlength="15">
             <select id="Tipo2" name="Tipo2">
               <option value="C">Caracter</option>
               <option value="N">Numérico</option>
               <option value="D">Data</option>
             </select>
-            <input type="checkbox" id="PermNull2" name="PermNull2">
+            <input type="hidden" name="PermNull2" value="False">
+            <input type="checkbox" id="PermNull2" name="PermNull2" value="True">
           </div>
           
           <div class="grid-row">
@@ -62,7 +64,8 @@
               <option value="N">Numérico</option>
               <option value="D">Data</option>
             </select>
-            <input type="checkbox" id="PermNull3" name="PermNull3">
+            <input type="hidden" name="PermNull3" value="False">
+            <input type="checkbox" id="PermNull3" name="PermNull3" value="True">
             
             <input type="text" id="Campo4" name="Campo4" maxlength="15">
             <select id="Tipo4" name="Tipo4">
@@ -70,7 +73,8 @@
               <option value="N">Numérico</option>
               <option value="D">Data</option>
             </select>
-            <input type="checkbox" id="PermNull4" name="PermNull4">
+            <input type="hidden" name="PermNull4" value="False">
+            <input type="checkbox" id="PermNull4" name="PermNull4" value="True">
           </div>
           
           <div class="grid-row">
@@ -80,7 +84,8 @@
               <option value="N">Numérico</option>
               <option value="D">Data</option>
             </select>
-            <input type="checkbox" id="PermNull5" name="PermNull5">
+            <input type="hidden" name="PermNull5" value="False">
+            <input type="checkbox" id="PermNull5" name="PermNull5" value="True">
             
             <input type="text" id="Campo6" name="Campo6" maxlength="15">
             <select id="Tipo6" name="Tipo6">
@@ -88,7 +93,8 @@
               <option value="N">Numérico</option>
               <option value="D">Data</option>
             </select>
-            <input type="checkbox" id="PermNull6" name="PermNull6">
+            <input type="hidden" name="PermNull6" value="False">
+            <input type="checkbox" id="PermNull6" name="PermNull6" value="True">
           </div>
           
           <div class="grid-row">
@@ -98,7 +104,8 @@
               <option value="N">Numérico</option>
               <option value="D">Data</option>
             </select>
-            <input type="checkbox" id="PermNull7" name="PermNull7">
+            <input type="hidden" name="PermNull7" value="False">
+            <input type="checkbox" id="PermNull7" name="PermNull7" value="True">
             
             <input type="text" id="Campo8" name="Campo8" maxlength="15">
             <select id="Tipo8" name="Tipo8">
@@ -106,7 +113,8 @@
               <option value="N">Numérico</option>
               <option value="D">Data</option>
             </select>
-            <input type="checkbox" id="PermNull8" name="PermNull8">
+            <input type="hidden" name="PermNull8" value="False">
+            <input type="checkbox" id="PermNull8" name="PermNull8" value="True">
           </div>
           
           <div class="grid-row">
@@ -116,7 +124,8 @@
               <option value="N">Numérico</option>
               <option value="D">Data</option>
             </select>
-            <input type="checkbox" id="PermNull9" name="PermNull9">
+            <input type="hidden" name="PermNull9" value="False">
+            <input type="checkbox" id="PermNull9" name="PermNull9" value="True">
             
             <input type="text" id="Campo10" name="Campo10" maxlength="15">
             <select id="Tipo10" name="Tipo10">
@@ -124,7 +133,8 @@
               <option value="N">Numérico</option>
               <option value="D">Data</option>
             </select>
-            <input type="checkbox" id="PermNull10" name="PermNull10">
+            <input type="hidden" name="PermNull10" value="False">
+            <input type="checkbox" id="PermNull10" name="PermNull10" value="True">
           </div>
         </div>
   
