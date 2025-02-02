@@ -183,7 +183,7 @@ def generate_html_code(table_name, fields, displayNames, formName, fieldsPK):
             </div>""")
         else:
             fields_html.append(f"""
-            <div class="form-group" id="{field}Container" style="display: none;">
+            <div class="form-group" id="{field}Container">
                 <label for="{field}">{displayNames.get(field, field)}:</label>
                 <input type="{map_field_to_input_type(field_characteristics[field]['type'])}" id="{field}" name="{field}" readonly>
             </div>""") 
@@ -246,7 +246,15 @@ def generate_html_code(table_name, fields, displayNames, formName, fieldsPK):
 
     function getSelected{table_name}() {{
         const selected = document.querySelector('input[name="selectedUser"]:checked');
-        return selected ? selected.value : null;
+        if (!selected) {{
+            return null;
+        }}
+        // Divide a string pelo separador para obter todos valores da chave primária
+        const keyParts = selected.value.split('|');
+        return {{
+{','.join([f'{quebraLinha}            {field}: keyParts[{i}]' for i, field in enumerate(fieldsPK)])}
+        }};
+
     }}
 
     document.addEventListener('DOMContentLoaded', function() {{
@@ -262,7 +270,8 @@ def generate_html_code(table_name, fields, displayNames, formName, fieldsPK):
                     const row = {table_name}Table.insertRow();
                     const radioCell = row.insertCell();
                     radioCell.className = 'radio-cell';
-                    radioCell.innerHTML = `<input type="radio" name="selectedUser" value="${{user.{fields[0]}}}">`;
+                    radioCell.innerHTML = `<input type="radio" name="selectedUser" value="{ "|".join([f"${{user.{field}}}" for field in fieldsPK]) }">`;
+
 { ''.join([f'                    row.insertCell().innerText = user.{field};{quebraLinha}' for index, field in enumerate(fields)]) }
                 }});
             }})
@@ -273,9 +282,10 @@ def generate_html_code(table_name, fields, displayNames, formName, fieldsPK):
     function showAddModal() {{
         document.getElementById('modalTitle').textContent = 'Novo {table_name}';
         document.getElementById('{table_name}Form').reset();
-        document.getElementById('{fields[0]}').value = '';
         document.getElementById('formModal').classList.add('active');
-        document.getElementById('{fields[0]}Container').style.display = 'none';
+{''.join([f"        document.getElementById('{field}').value = '';{quebraLinha}" for field in fieldsPK])}
+{''.join([f"        document.getElementById('{field}').readOnly = false;{quebraLinha}" for field in fieldsPK])}
+
         // Esconder mensagem de erro ao abrir modal
         document.getElementById('errorMessage').style.display = 'none';
         document.getElementById('errorMessage').innerHTML = '';
@@ -289,24 +299,20 @@ def generate_html_code(table_name, fields, displayNames, formName, fieldsPK):
         errorDiv.innerHTML = '';
     }}
 
-    function getSelected({table_name}) {{
-        const selected = document.querySelector('input[name="selected{table_name}"]:checked');
-        return selected ? selected.value : null;
-    }}
-
     function editSelected() {{
-        const {table_name} = getSelected{table_name}();
-        if (!{table_name}) {{
-            alert('Por favor, selecione um {table_name} para editar.');
+        const key = getSelected{table_name}();
+        if (!key) {{
+            alert('Por favor, selecione uma linha para editar.');
             return;
         }}
-        fetch(`/api/{table_name}/${{{table_name}}}`)
+        const url = `/api/{table_name}/{"/".join([f"${{key.{field}}}" for field in fieldsPK])}`;
+        fetch(url)
             .then(response => response.json())
             .then({table_name} => {{
-                document.getElementById('modalTitle').textContent = 'Editar {table_name}';
+                document.getElementById('modalTitle').textContent = 'Editar {formName}';
 { ''.join([f'                document.getElementById("{field}").value = {table_name}.{field};{quebraLinha}' for index, field in enumerate(fields)]) }
 { ''.join([f'                document.getElementById("{field}Container").style.display = "block";{quebraLinha}' for field in fieldsPK])}
-{ ''.join([f'                document.getElementById("{field}").readOnly = true;{quebraLinha}' for field in fieldsPK])}
+
                 document.getElementById('formModal').classList.add('active');
             }})
 
@@ -334,10 +340,14 @@ def generate_html_code(table_name, fields, displayNames, formName, fieldsPK):
        
     document.getElementById('{table_name}Form').addEventListener('submit', function(event) {{
         event.preventDefault();
-        const {table_name} = document.getElementById('{fields[0]}').value.trim();
-        const isEdit = document.getElementById('{fields[0]}Container').style.display === 'block';  
+        const {table_name} = document.getElementById('{fieldsPK[0]}').value.trim();
+        const isEdit = document.getElementById('{fieldsPK[0]}').readOnly === true;
         const method = isEdit ? 'PUT' : 'POST';
-        const url = isEdit ? `/api/{table_name}/${{{table_name}}}` : '/api/{table_name}/';
+        let url = '/api/{table_name}/';
+        if (isEdit) {{
+{''.join([f"            const {field} = document.getElementById('{field}').value.trim();{quebraLinha}" for field in fieldsPK])}
+            url = `/api/{table_name}/{"/".join([f"${{encodeURIComponent({field})}}" for field in fieldsPK])}`;
+        }}            
         const formData = new FormData(this);
         const data = Object.fromEntries(formData.entries());
 
@@ -356,7 +366,7 @@ def generate_html_code(table_name, fields, displayNames, formName, fieldsPK):
     }})
     .then(() => {{
         hideModal();
-        loadprojeto();
+        load{table_name}();
     }})
     .catch(error => {{
         showError(error.message);
