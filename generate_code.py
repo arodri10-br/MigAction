@@ -407,6 +407,10 @@ def generate_python_code(table_name, fields, fieldsPK, fieldsAI):
 
     fields_update = "\n        ".join(f"{table_name}.{field}=data.get('{field}', {table_name}.{field})" for field in fields)
 
+    fields_route = "/".join([f"<string:{field}>" for field in fieldsPK])
+    fields_list_pk = ",".join(fieldsPK)
+
+
     return f"""
 from flask import Blueprint, request, jsonify
 from sysdb import SessionLocal, {table_name.capitalize()}
@@ -420,13 +424,14 @@ def create_{table_name}():
     try:
         data = request.json
         session = SessionLocal()
-        
-        if session.query({table_name.capitalize()}).filter_by({fields[0]}=data['{fields[0]}']).first():
+        if session.query({table_name.capitalize()}).filter_by({ ''.join([f'{field} = data["{field}"],' for field in fieldsPK])}).first():
             session.close()
             return jsonify({{"error": "{fields[0]} já existe."}}), 400
         
         {table_name} = {table_name.capitalize()}(
-{fields_create}
+{fields_create},
+            username=request.headers.get('username', 'admin'),
+            dtAtualizacao=datetime.now(timezone.utc)
         )
         
         session.add({table_name})
@@ -445,21 +450,21 @@ def get_{table_name}_list():
     return jsonify([{table_name}.to_dict() for {table_name} in {table_name}s])
 
 # Obter um registro específico da tabela {table_name}
-@bp_{table_name}.route('/<string:{fields[0]}>', methods=['GET'])
-def get_{table_name}({fields[0]}):
+@bp_{table_name}.route('/{fields_route}' , methods=['GET'])
+def get_{table_name}({fields_list_pk}):
     session = SessionLocal()
-    {table_name} = session.query({table_name.capitalize()}).filter_by({fields[0]}={fields[0]}).first()
+    {table_name} = session.query({table_name.capitalize()}).filter_by({ ','.join([f'{field} = {field}' for field in fieldsPK])}).first():
     session.close()
     if {table_name}:
         return jsonify({table_name}.to_dict())
-    return jsonify({{"error": "{table_name} não encontrado."}}), 404
+    return jsonify({{"error": "Registro não encontrado."}}), 404
 
 # Atualizar um registro da tabela {table_name}
-@bp_{table_name}.route('/<string:{fields[0]}>', methods=['PUT'])
-def update_{table_name}({fields[0]}):
+@bp_{table_name}.route('/{fields_route}', methods=['PUT'])
+def update_{table_name}({fields_list_pk}):
     try:
         session = SessionLocal()
-        {table_name} = session.query({table_name.capitalize()}).filter_by({fields[0]}={fields[0]}).first()
+        {table_name} = session.query({table_name.capitalize()}).filter_by({ ','.join([f'{field} = {field}' for field in fieldsPK])}).first():
         if not {table_name}:
             session.close()
             return jsonify({{"error": "Registro não encontrado."}}), 404
