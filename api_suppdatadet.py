@@ -1,4 +1,3 @@
-
 from flask import Blueprint, request, jsonify
 from sysdb import SessionLocal, SuppDataDet
 from datetime import datetime, timezone
@@ -69,7 +68,6 @@ def get_suppdatadet(IdProjeto, codSupData, Chave1, Chave2=None):
     return jsonify({"error": "Registro não encontrado."}), 404
 
 # Atualizar um registro da tabela suppdatadet
-
 @bp_suppdatadet.route('/<string:IdProjeto>/<string:codSupData>/<string:Chave1>/', methods=['PUT'])
 @bp_suppdatadet.route('/<string:IdProjeto>/<string:codSupData>/<string:Chave1>/<string:Chave2>', methods=['PUT'])
 def update_suppdatadet(IdProjeto, codSupData, Chave1, Chave2=None):
@@ -88,10 +86,10 @@ def update_suppdatadet(IdProjeto, codSupData, Chave1, Chave2=None):
             return jsonify({"error": "Registro não encontrado."}), 404
         
         data = request.json
-        suppdatadet.IdProjeto=data.get('IdProjeto', suppdatadet.IdProjeto)
-        suppdatadet.codSupData=data.get('codSupData', suppdatadet.codSupData)
-        suppdatadet.Chave1=data.get('Chave1', suppdatadet.Chave1)
-        suppdatadet.Chave2=data.get('Chave2', suppdatadet.Chave2)
+        #suppdatadet.IdProjeto=data.get('IdProjeto', suppdatadet.IdProjeto)
+        #suppdatadet.codSupData=data.get('codSupData', suppdatadet.codSupData)
+        #suppdatadet.Chave1=data.get('Chave1', suppdatadet.Chave1)
+        #suppdatadet.Chave2=data.get('Chave2', suppdatadet.Chave2)
         suppdatadet.Valor1=data.get('Valor1', suppdatadet.Valor1)
         suppdatadet.Valor2=data.get('Valor2', suppdatadet.Valor2)
         suppdatadet.Valor3=data.get('Valor3', suppdatadet.Valor3)
@@ -102,7 +100,7 @@ def update_suppdatadet(IdProjeto, codSupData, Chave1, Chave2=None):
         suppdatadet.Valor8=data.get('Valor8', suppdatadet.Valor8)
         suppdatadet.Valor9=data.get('Valor9', suppdatadet.Valor9)
         suppdatadet.Valor10=data.get('Valor10', suppdatadet.Valor10)
-        
+
         session.commit()
         session.close()
         return jsonify(success=True), 200

@@ -77,6 +77,6 @@ def logout():
 def call_Suppdataconfig():
     return render_template('form_suppdataconfig.html', menu_items=menu_items)
 
-@bp_routes.route('/suppdatadet')
-def call_Suppdatadet():
-    return render_template('form_suppdatadet.html', menu_items=menu_items)
+@bp_routes.route('/suppdatadet/<string:codSupData>')
+def call_Suppdatadet(codSupData=None):
+    return render_template('form_suppdatadet.html', menu_items=menu_items, codSupData=codSupData)

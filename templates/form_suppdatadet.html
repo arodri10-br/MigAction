@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="page-header">
-    <h1 class="mb-4">suppdatadet</h1>
+    <h1 id="formTitle" class="mb-4">Manutenção Base Suplementar</h1>
 </div>
 <div class="toolbar">
     <button onclick="showAddModal()" class="primary">
@@ -23,22 +23,22 @@
 <div class="grid-container">
     <table class="grid">
         <thead>
-            <tr>
+            <tr id="tableHeaders">
                 <th class="radio-cell"></th>
                 <th>IdProjeto</th>
                 <th>codSupData</th>
-                <th>Chave1</th>
-                <th>Chave2</th>
-                <th>Valor1</th>
-                <th>Valor2</th>
-                <th>Valor3</th>
-                <th>Valor4</th>
-                <th>Valor5</th>
-                <th>Valor6</th>
-                <th>Valor7</th>
-                <th>Valor8</th>
-                <th>Valor9</th>
-                <th>Valor10</th>
+                <th id="thChave1">Chave1</th>
+                <th id="thChave2">Chave2</th>
+                <th id="thValor1">Valor1</th>
+                <th id="thValor2">Valor2</th>
+                <th id="thValor3">Valor3</th>
+                <th id="thValor4">Valor4</th>
+                <th id="thValor5">Valor5</th>
+                <th id="thValor6">Valor6</th>
+                <th id="thValor7">Valor7</th>
+                <th id="thValor8">Valor8</th>
+                <th id="thValor9">Valor9</th>
+                <th id="thValor10">Valor10</th>
             </tr>
         </thead>
         <tbody id="suppdatadetTable">
@@ -50,87 +50,115 @@
 <!-- Modal de Formulário -->
 <div id="formModal" class="modal">
     <div class="modal-content">
-        <h2 id="modalTitle">Novo "suppdatadet"</h2>
-        <form id="suppdatadetForm">
-            
-            <div class="form-group" id="IdProjetoContainer">
-                <label for="IdProjeto">IdProjeto:</label>
-                <input type="number" id="IdProjeto" name="IdProjeto" value="{{ session.idProjeto }}" readonly>
-            </div>
-            
-            <div class="form-group" id="codSupDataContainer">
-                <label for="codSupData">codSupData:</label>
-                <input type="text" id="codSupData" name="codSupData" value ="StatusProj" readonly>
-            </div>
+      <h2 id="modalTitle">Carregando...</h2>
+      <form id="suppdatadetForm">
 
-            <div class="form-group" id="Chave1Container">
-                <label for="Chave1">Chave1:</label>
-                <input type="text" id="Chave1" name="Chave1" readonly>
-            </div>
+        <div class="form-group" id="IdProjetoContainer">
+            <label for="IdProjeto">IdProjeto:</label>
+            <input type="number" id="IdProjeto" name="IdProjeto" value="{{ session.idProjeto }}" readonly>
+        </div>
 
-            <div class="form-group" id="Chave2Container">
-                <label for="Chave2">Chave2:</label>
-                <input type="text" id="Chave2" name="Chave2" readonly>
-            </div>
-
-            <div class="form-group">
-                <label for="Valor1">Valor1:</label>
-                <input type="text" id="Valor1" name="Valor1" >
-            </div>
-
-            <div class="form-group">
-                <label for="Valor2">Valor2:</label>
-                <input type="text" id="Valor2" name="Valor2" >
-            </div>
-
-            <div class="form-group">
-                <label for="Valor3">Valor3:</label>
-                <input type="text" id="Valor3" name="Valor3" >
-            </div>
-
-            <div class="form-group">
-                <label for="Valor4">Valor4:</label>
-                <input type="text" id="Valor4" name="Valor4" >
-            </div>
-
-            <div class="form-group">
-                <label for="Valor5">Valor5:</label>
-                <input type="text" id="Valor5" name="Valor5" >
-            </div>
-
-            <div class="form-group">
-                <label for="Valor6">Valor6:</label>
-                <input type="text" id="Valor6" name="Valor6" >
-            </div>
-
-            <div class="form-group">
-                <label for="Valor7">Valor7:</label>
-                <input type="text" id="Valor7" name="Valor7" >
-            </div>
-
-            <div class="form-group">
-                <label for="Valor8">Valor8:</label>
-                <input type="text" id="Valor8" name="Valor8" >
-            </div>
-
-            <div class="form-group">
-                <label for="Valor9">Valor9:</label>
-                <input type="text" id="Valor9" name="Valor9" >
-            </div>
-
-            <div class="form-group">
-                <label for="Valor10">Valor10:</label>
-                <input type="text" id="Valor10" name="Valor10" >
-            </div>
-            <div class="modal-actions">
-                <button type="button" class="secondary" onclick="hideModal()">Cancelar</button>
-                <button type="submit" class="primary">Salvar</button>
-            </div>
-            <div id="errorMessage" class="error-message" style="display: none; color: red; margin-top: 10px;"></div>
-        </form>
+        <div class="form-group" id="IdProjetoContainer" style="display: none;">
+          <label for="IdProjeto">IdProjeto:</label>
+          <input type="number" id="IdProjeto" name="IdProjeto" readonly>
+        </div>
+  
+        <div class="form-group" id="codSupDataContainer" style="display: none;">
+          <label for="codSupData">codSupData:</label>
+          <input type="text" id="codSupData" name="codSupData" readonly maxlength="20">
+        </div>
+  
+        <div class="form-group">
+          <label for="labelChave1" for="Chave1">Chave1:</label>
+          <input type="text" id="Chave1" name="Chave1" maxlength="20">
+        </div>
+  
+        <div class="form-group">
+            <label for="labelChave2" for="Chave2">Chave2:</label>
+          <input type="text" id="Chave2" name="Chave2" maxlength="20">
+        </div>
+  
+        <div class="form-group">
+            <label id="labelValor1" for="Valor1">Valor1:</label>
+            <input type="text" id="Valor1" name="Valor1" maxlength="20">
+        </div>
+  
+        <div class="form-group">
+            <label id="labelValor2" for="Valor1">Valor2:</label>
+            <input type="text" id="Valor2" name="Valor2" maxlength="20">
+        </div>
+  
+        <div class="form-group">
+            <label id="labelValor3" for="Valor3">Valor1:</label>
+            <input type="text" id="Valor3" name="Valor3" maxlength="20">
+        </div>
+  
+        <div class="form-group">
+            <label id="labelValor4" for="Valor1">Valor4:</label>
+            <input type="text" id="Valor4" name="Valor4" maxlength="20">
+        </div>
+  
+        <div class="form-group">
+            <label id="labelValor5" for="Valor1">Valor5:</label>
+            <input type="text" id="Valor5" name="Valor5" maxlength="20">
+        </div>
+  
+        <div class="form-group">
+            <label id="labelValor6" for="Valor1">Valor6:</label>
+            <input type="text" id="Valor6" name="Valor6" maxlength="20">
+        </div>
+  
+        <div class="form-group">
+            <label id="labelValor7" for="Valor1">Valor7:</label>
+            <input type="text" id="Valor7" name="Valor7" maxlength="20">
+        </div>
+  
+        <div class="form-group">
+            <label id="labelValor8" for="Valor1">Valor8:</label>
+            <input type="text" id="Valor8" name="Valor8" maxlength="20">
+        </div>
+  
+        <div class="form-group">
+            <label id="labelValor9" for="Valor1">Valor9:</label>
+            <input type="text" id="Valor9" name="Valor9" maxlength="20">
+        </div>
+  
+        <div class="form-group">
+            <label id="labelValor10" for="Valor1">Valor10:</label>
+            <input type="text" id="Valor10" name="Valor10" maxlength="20">
+        </div>
+  
+        <div class="modal-actions">
+          <button type="button" class="secondary" onclick="hideModal()">Cancelar</button>
+          <button type="submit" class="primary">Salvar</button>
+        </div>
+        <div id="errorMessage" class="error-message" style="display: none; color: red; margin-top: 10px;"></div>
+      </form>
     </div>
-</div>
-
+  </div>
+  
+  <!-- Estilos CSS para os form-groups em linha -->
+  <style>
+    .form-group {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    
+    .form-group label {
+      margin-right: 10px;
+      /* Você pode definir uma largura fixa para os labels, se necessário */
+      width: 120px;
+    }
+    
+    .form-group input {
+      flex: 1;
+      padding: 6px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+    }
+  </style>
+  
 <script>
 
     function getSelectedsuppdatadet() {
@@ -242,10 +270,10 @@
                 document.getElementById("Valor9").value = suppdatadet.Valor9;
                 document.getElementById("Valor10").value = suppdatadet.Valor10;
 
-                document.getElementById("IdProjetoContainer").style.display = "block";
-                document.getElementById("codSupDataContainer").style.display = "block";
-                document.getElementById("Chave1Container").style.display = "block";
-                document.getElementById("Chave2Container").style.display = "block";
+                document.getElementById("IdProjeto").style.display = "block";
+                document.getElementById("codSupData").style.display = "block";
+                document.getElementById("Chave1").style.display = "block";
+                document.getElementById("Chave2").style.display = "block";
 
                 //document.getElementById("IdProjeto").readOnly = true;
                 //document.getElementById("codSupData").readOnly = true;
@@ -325,7 +353,59 @@ function showError(message) {
     errorDiv.style.display = 'block'; 
     errorDiv.innerHTML = `<strong>Erro:</strong> ${message}`;
 }
-          
+
+/* Ajustes dinamicos do formulario conforme o cadastro da base suplementar */
+document.addEventListener('DOMContentLoaded', function () {
+    const pathSegments = window.location.pathname.split("/");
+    console.log(pathSegments);
+    const codSupData = pathSegments.length > 2 ? pathSegments[2] : null;
+    console.log(codSupData);
+
+    if (codSupData) {
+        fetch(`/api/suppdataconfig/${codSupData}`)
+            .then(response => response.json())
+            .then(data => {
+                if (!data || data.error) {
+                    console.error("Erro ao carregar a configuração:", data.error);
+                    return;
+                }
+
+                // 1 Atualizar o título da página e do modal
+                document.getElementById("formTitle").textContent = data.DescSupData;
+                document.getElementById("modalTitle").textContent = `Novo ${data.DescSupData}`;
+
+                // 2 Atualizar os nomes dos campos e ocultar os vazios
+                updateField("Chave1", data.Chave1);
+                updateField("Chave2", data.Chave2);
+                for (let i = 1; i <= 10; i++) {
+                    updateField(`Valor${i}`, data[`Valor${i}`]);
+                }
+            })
+            .catch(error => console.error("Erro ao carregar a API:", error));
+    }
+});
+
+/**
+ * Atualiza o nome da coluna e oculta caso o valor seja vazio
+ * @param {string} field Nome do campo (ex: "Chave1", "Valor1")
+ * @param {string} value Nome real do campo vindo da API
+ */
+function updateField(field, value) {
+    const thElement = document.getElementById(`th${field}`);
+    const labelElement = document.getElementById(`label${field}`);
+    const inputElement = document.getElementById(field);
+
+    if (value && value.trim() !== "") {
+        if (thElement) thElement.textContent = value;
+        if (labelElement) labelElement.textContent = value + ":";
+    } else {
+        if (thElement) thElement.style.display = "none";
+        if (labelElement) labelElement.style.display = "none";
+        if (inputElement) inputElement.style.display = "none";
+    }
+}
+
+
 </script>
 
 {% endblock %}

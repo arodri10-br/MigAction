@@ -311,7 +311,7 @@ def generate_html_code(table_name, fields, displayNames, formName, fieldsPK):
             .then({table_name} => {{
                 document.getElementById('modalTitle').textContent = 'Editar {formName}';
 { ''.join([f'                document.getElementById("{field}").value = {table_name}.{field};{quebraLinha}' for index, field in enumerate(fields)]) }
-{ ''.join([f'                document.getElementById("{field}Container").style.display = "block";{quebraLinha}' for field in fieldsPK])}
+{ ''.join([f'                document.getElementById("{field}").style.display = "block";{quebraLinha}' for field in fieldsPK])}
 
                 document.getElementById('formModal').classList.add('active');
             }})
