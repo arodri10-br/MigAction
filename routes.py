@@ -19,8 +19,8 @@ def call_projeto():
     return render_template('form_projeto.html', menu_items=menu_items)
 
 @bp_routes.route('/datasource')
-def configs():
-    return render_template('datasource.html', menu_items=menu_items)
+def call_Datasource():
+    return render_template('form_datasource.html', menu_items=menu_items)
 
 @bp_routes.route('/generate-code')
 def generatecode():

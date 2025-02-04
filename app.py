@@ -8,6 +8,7 @@ from api_database import bp_database
 from api_projeto import bp_projeto
 from api_suppdataconfig import bp_suppdataconfig
 from api_suppdatadet import bp_suppdatadet
+from api_datasource import bp_datasource
 from generate_code import generate_code_bp
 
 app = Flask(__name__, 
@@ -33,6 +34,7 @@ app.register_blueprint(generate_code_bp)
 app.register_blueprint(bp_projeto)
 app.register_blueprint(bp_suppdataconfig)
 app.register_blueprint(bp_suppdatadet)
+app.register_blueprint(bp_datasource)
 
 if __name__ == '__main__':
     app.run(debug=True)

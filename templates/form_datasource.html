@@ -1,0 +1,250 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="mb-4">Data Source</h1>
+</div>
+<div class="toolbar">
+    <button onclick="showAddModal()" class="primary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Novo
+    </button>
+    <button onclick="editSelected()" class="primary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+        Editar
+    </button>
+    <button onclick="deleteSelected()" class="secondary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        Excluir
+    </button>
+</div>
+
+<div class="grid-container">
+    <table class="grid">
+        <thead>
+            <tr>
+                <th class="radio-cell"></th>
+                <th>idDataSource</th>
+                <th>dsDataSource</th>
+                <th>TpBanco</th>
+                <th>nmBanco</th>
+                <th>server</th>
+                <th>user</th>
+                <th>passw</th>
+            </tr>
+        </thead>
+        <tbody id="datasourceTable">
+            <!-- Preenchido dinamicamente -->
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal de Formulário -->
+<div id="formModal" class="modal">
+    <div class="modal-content">
+        <h2 id="modalTitle">Novo "datasource"</h2>
+        <form id="datasourceForm">
+            
+            <div class="form-group" id="idDataSourceContainer">
+                <label for="idDataSource">idDataSource:</label>
+                <input type="number" id="idDataSource" name="idDataSource" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="dsDataSource">Data Source:</label>
+                <input type="text" id="dsDataSource" name="dsDataSource" >
+            </div>
+
+            <div class="form-group">
+                <label for="TpBanco">Tipo Banco:</label>
+                <input type="text" id="TpBanco" name="TpBanco" >
+            </div>
+
+            <div class="form-group">
+                <label for="nmBanco">Nome Banco:</label>
+                <input type="text" id="nmBanco" name="nmBanco" >
+            </div>
+
+            <div class="form-group">
+                <label for="server">Servidor:</label>
+                <input type="text" id="server" name="server" >
+            </div>
+
+            <div class="form-group">
+                <label for="user">User Processo:</label>
+                <input type="text" id="user" name="user" >
+            </div>
+
+            <div class="form-group">
+                <label for="passw">Senha:</label>
+                <input type="text" id="passw" name="passw" >
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="secondary" onclick="hideModal()">Cancelar</button>
+                <button type="submit" class="primary">Salvar</button>
+            </div>
+            <div id="errorMessage" class="error-message" style="display: none; color: red; margin-top: 10px;"></div>
+        </form>
+    </div>
+</div>
+
+<script>
+
+    function getSelecteddatasource() {
+        const selected = document.querySelector('input[name="selectedUser"]:checked');
+        if (!selected) {
+            return null;
+        }
+        // Divide a string pelo separador para obter todos valores da chave primária
+        const keyParts = selected.value.split('|');
+        return {
+
+            idDataSource: keyParts[0]
+        };
+
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loaddatasource();
+    });
+    function loaddatasource() {
+        fetch('/api/datasource/')
+            .then(response => response.json())
+            .then(data => {
+                const datasourceTable = document.getElementById('datasourceTable');
+                datasourceTable.innerHTML = '';
+                data.forEach(user => {
+                    const row = datasourceTable.insertRow();
+                    const radioCell = row.insertCell();
+                    radioCell.className = 'radio-cell';
+                    radioCell.innerHTML = `<input type="radio" name="selectedUser" value="${user.idDataSource}">`;
+
+                    row.insertCell().innerText = user.idDataSource;
+                    row.insertCell().innerText = user.dsDataSource;
+                    row.insertCell().innerText = user.TpBanco;
+                    row.insertCell().innerText = user.nmBanco;
+                    row.insertCell().innerText = user.server;
+                    row.insertCell().innerText = user.user;
+                    row.insertCell().innerText = user.passw;
+
+                });
+            })
+        .catch(error => console.error('Erro ao carregar datasource:', error));
+    }
+    
+
+    function showAddModal() {
+        document.getElementById('modalTitle').textContent = 'Novo datasource';
+        document.getElementById('datasourceForm').reset();
+        document.getElementById('formModal').classList.add('active');
+        document.getElementById('idDataSource').value = '';
+
+        document.getElementById('idDataSource').readOnly = false;
+
+
+        // Esconder mensagem de erro ao abrir modal
+        document.getElementById('errorMessage').style.display = 'none';
+        document.getElementById('errorMessage').innerHTML = '';
+    }
+    
+    function hideModal() {
+        document.getElementById('formModal').classList.remove('active');
+        //  Esconder e limpar a mensagem de erro ao fechar o modal
+        let errorDiv = document.getElementById('errorMessage');
+        errorDiv.style.display = 'none';
+        errorDiv.innerHTML = '';
+    }
+
+    function editSelected() {
+        const key = getSelecteddatasource();
+        if (!key) {
+            alert('Por favor, selecione uma linha para editar.');
+            return;
+        }
+        const url = `/api/datasource/${key.idDataSource}`;
+        fetch(url)
+            .then(response => response.json())
+            .then(datasource => {
+                document.getElementById('modalTitle').textContent = 'Editar Data Source';
+                document.getElementById("idDataSource").value = datasource.idDataSource;
+                document.getElementById("dsDataSource").value = datasource.dsDataSource;
+                document.getElementById("TpBanco").value = datasource.TpBanco;
+                document.getElementById("nmBanco").value = datasource.nmBanco;
+                document.getElementById("server").value = datasource.server;
+                document.getElementById("user").value = datasource.user;
+                document.getElementById("passw").value = datasource.passw;
+
+                document.getElementById("idDataSource").style.display = "block";
+
+
+                document.getElementById('formModal').classList.add('active');
+            })
+
+            .catch(error => {
+                showError('Erro ao carregar datasource para edição.');
+                console.error('Erro ao carregar datasource:', error);
+            });
+        }
+
+    function deleteSelected() {
+        const datasource = getSelecteddatasource();
+        if (!datasource) {
+            alert('Por favor, selecione um datasource para excluir.');
+            return;
+        }
+
+        if (confirm('Tem certeza que deseja excluir este datasource?')) {
+            fetch(`/api/datasource/${datasource}`, {
+                method: 'DELETE'
+            }).then(() => {
+                loaddatasource();
+            });
+        }
+    }
+       
+    document.getElementById('datasourceForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const datasource = document.getElementById('idDataSource').value.trim();
+        const isEdit = document.getElementById('idDataSource').readOnly === true;
+        const method = isEdit ? 'PUT' : 'POST';
+        let url = '/api/datasource/';
+        if (isEdit) {
+            const idDataSource = document.getElementById('idDataSource').value.trim();
+
+            url = `/api/datasource/${encodeURIComponent(idDataSource)}`;
+        }            
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+
+        fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => { throw new Error(err.error || 'Erro desconhecido'); });
+        }
+        return response.json();
+    })
+    .then(() => {
+        hideModal();
+        loaddatasource();
+    })
+    .catch(error => {
+        showError(error.message);
+    });
+});
+
+function showError(message) {
+    let errorDiv = document.getElementById('errorMessage');
+    errorDiv.style.display = 'block'; 
+    errorDiv.innerHTML = `<strong>Erro:</strong> ${message}`;
+}
+          
+</script>
+
+{% endblock %}
