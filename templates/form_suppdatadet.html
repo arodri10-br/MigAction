@@ -74,7 +74,7 @@
         </div>
   
         <div class="form-group">
-            <label for="labelChave2" for="Chave2">Chave2:</label>
+          <label for="labelChave2" for="Chave2">Chave2:</label>
           <input type="text" id="Chave2" name="Chave2" maxlength="20">
         </div>
   
@@ -84,7 +84,7 @@
         </div>
   
         <div class="form-group">
-            <label id="labelValor2" for="Valor1">Valor2:</label>
+            <label id="labelValor2" for="Valor2">Valor2:</label>
             <input type="text" id="Valor2" name="Valor2" maxlength="20">
         </div>
   
@@ -94,37 +94,37 @@
         </div>
   
         <div class="form-group">
-            <label id="labelValor4" for="Valor1">Valor4:</label>
+            <label id="labelValor4" for="Valor4">Valor4:</label>
             <input type="text" id="Valor4" name="Valor4" maxlength="20">
         </div>
   
         <div class="form-group">
-            <label id="labelValor5" for="Valor1">Valor5:</label>
+            <label id="labelValor5" for="Valor5">Valor5:</label>
             <input type="text" id="Valor5" name="Valor5" maxlength="20">
         </div>
   
         <div class="form-group">
-            <label id="labelValor6" for="Valor1">Valor6:</label>
+            <label id="labelValor6" for="Valor6">Valor6:</label>
             <input type="text" id="Valor6" name="Valor6" maxlength="20">
         </div>
   
         <div class="form-group">
-            <label id="labelValor7" for="Valor1">Valor7:</label>
+            <label id="labelValor7" for="Valor7">Valor7:</label>
             <input type="text" id="Valor7" name="Valor7" maxlength="20">
         </div>
   
         <div class="form-group">
-            <label id="labelValor8" for="Valor1">Valor8:</label>
+            <label id="labelValor8" for="Valor8">Valor8:</label>
             <input type="text" id="Valor8" name="Valor8" maxlength="20">
         </div>
   
         <div class="form-group">
-            <label id="labelValor9" for="Valor1">Valor9:</label>
+            <label id="labelValor9" for="Valor9">Valor9:</label>
             <input type="text" id="Valor9" name="Valor9" maxlength="20">
         </div>
   
         <div class="form-group">
-            <label id="labelValor10" for="Valor1">Valor10:</label>
+            <label id="labelValor10" for="Valor10">Valor10:</label>
             <input type="text" id="Valor10" name="Valor10" maxlength="20">
         </div>
   
@@ -156,7 +156,53 @@
       padding: 6px;
       border: 1px solid #ccc;
       border-radius: 3px;
+
     }
+    /* Garante que as colunas tenham larguras fixas */
+    .grid-container table {
+    width: 100%;
+    border-collapse: collapse;
+    }
+
+    .grid-container th,
+    .grid-container td {
+        padding: 8px;
+        text-align: center;
+        vertical-align: middle;
+        border-bottom: 1px solid #ddd;
+        white-space: nowrap; /* Evita quebras de linha */
+    }
+
+    /* Define larguras específicas para evitar que as colunas fiquem desalinhadas */
+    /* Define largura mínima para evitar quebra de colunas */
+    .grid-container th, .grid-container td {
+        min-width: 100px;
+    }    
+    .grid-container th:nth-child(1), 
+    .grid-container td:nth-child(1) {
+        width: 5%;
+    }
+
+    .grid-container th:nth-child(2),
+    .grid-container td:nth-child(2) {
+        width: 15%;
+    }
+
+    .grid-container th:nth-child(3),
+    .grid-container td:nth-child(3) {
+        width: 10%;
+    }
+
+    .grid-container th:nth-child(4),
+    .grid-container td:nth-child(4) {
+        width: 20%;
+    }
+
+    .grid-container th:nth-child(5),
+    .grid-container td:nth-child(5) {
+        width: 20%;
+    }
+
   </style>
   
 <script>
@@ -183,9 +229,16 @@
         loadsuppdatadet();
     });
     function loadsuppdatadet() {
-        fetch('/api/suppdatadet/')
+        var codSupData = "{{ codSupData }}";
+        var idProjeto = "{{ session.idProjeto }}"; 
+        //console.log("Valor de codSupData:", codSupData);    
+        //console.log("Enviando idProjeto:", idProjeto);
+        var url = `/api/suppdatadet/${encodeURIComponent(idProjeto)}/${encodeURIComponent(codSupData)}`;
+
+        fetch(url)
             .then(response => response.json())
             .then(data => {
+                
                 const suppdatadetTable = document.getElementById('suppdatadetTable');
                 suppdatadetTable.innerHTML = '';
                 data.forEach(user => {
@@ -196,18 +249,17 @@
                     row.insertCell().innerText = user.IdProjeto;
                     row.insertCell().innerText = user.codSupData;
                     row.insertCell().innerText = user.Chave1;
-                    row.insertCell().innerText = user.Chave2;
-                    row.insertCell().innerText = user.Valor1;
-                    row.insertCell().innerText = user.Valor2;
-                    row.insertCell().innerText = user.Valor3;
-                    row.insertCell().innerText = user.Valor4;
-                    row.insertCell().innerText = user.Valor5;
-                    row.insertCell().innerText = user.Valor6;
-                    row.insertCell().innerText = user.Valor7;
-                    row.insertCell().innerText = user.Valor8;
-                    row.insertCell().innerText = user.Valor9;
-                    row.insertCell().innerText = user.Valor10;
-
+                    row.insertCell().innerText = user.Chave2 || "";
+                    row.insertCell().innerText = user.Valor1 || "";
+                    row.insertCell().innerText = user.Valor2 || "";
+                    row.insertCell().innerText = user.Valor3 || "";
+                    row.insertCell().innerText = user.Valor4 || "";
+                    row.insertCell().innerText = user.Valor5 || "";
+                    row.insertCell().innerText = user.Valor6 || "";
+                    row.insertCell().innerText = user.Valor7 || "";
+                    row.insertCell().innerText = user.Valor8 || "";
+                    row.insertCell().innerText = user.Valor9 || "";
+                    row.insertCell().innerText = user.Valor10 || "";                
                 });
             })
         .catch(error => console.error('Erro ao carregar suppdatadet:', error));
@@ -222,8 +274,8 @@
         //document.getElementById('IdProjetoContainer').style.display = 'none';
         document.getElementById('Chave1').value = '';
         document.getElementById('Chave2').value = '';
-        document.getElementById("Chave1").readOnly = false;
-        document.getElementById("Chave2").readOnly = false;
+        document.getElementById('Chave1').readOnly = false;
+        document.getElementById('Chave2').readOnly = false;
         
         // Esconder mensagem de erro ao abrir modal
         document.getElementById('errorMessage').style.display = 'none';
@@ -359,7 +411,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const pathSegments = window.location.pathname.split("/");
     console.log(pathSegments);
     const codSupData = pathSegments.length > 2 ? pathSegments[2] : null;
-    console.log(codSupData);
+    console.log("Chamada da API com : " & codSupData);
 
     if (codSupData) {
         fetch(`/api/suppdataconfig/${codSupData}`)
@@ -375,10 +427,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.getElementById("modalTitle").textContent = `Novo ${data.DescSupData}`;
 
                 // 2 Atualizar os nomes dos campos e ocultar os vazios
-                updateField("Chave1", data.Chave1);
-                updateField("Chave2", data.Chave2);
+                updateField('Chave1', data.Chave1);
+                updateField('Chave2', data.Chave2);
                 for (let i = 1; i <= 10; i++) {
-                    updateField(`Valor${i}`, data[`Valor${i}`]);
+                    updateField(`Valor${i}`, data[`Campo${i}`]);
                 }
             })
             .catch(error => console.error("Erro ao carregar a API:", error));
@@ -402,6 +454,10 @@ function updateField(field, value) {
         if (thElement) thElement.style.display = "none";
         if (labelElement) labelElement.style.display = "none";
         if (inputElement) inputElement.style.display = "none";
+
+        if (thElement) thElement.textContent = "";
+        if (labelElement) labelElement.textContent ="";
+
     }
 }
 

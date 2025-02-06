@@ -42,10 +42,15 @@ def create_suppdatadet():
         return jsonify(success=False, error=str(e)), 500
 
 # Obter suppdatadet
-@bp_suppdatadet.route('/', methods=['GET'])
-def get_suppdatadet_list():
+@bp_suppdatadet.route('/<string:IdProjeto>/<string:codSupData>', methods=['GET'])
+def get_suppdatadet_list(IdProjeto, codSupData):
     session = SessionLocal()
     suppdatadets = session.query(SuppDataDet).all()
+    query = session.query(SuppDataDet).filter_by(
+        IdProjeto=IdProjeto,
+        codSupData=codSupData
+    )
+    suppdatadets = query.all()
     session.close()
     return jsonify([suppdatadet.to_dict() for suppdatadet in suppdatadets])
 
