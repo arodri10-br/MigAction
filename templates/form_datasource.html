@@ -18,6 +18,11 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
         Excluir
     </button>
+    <button onclick="showUpdatePasswordModal()" class="secondary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 20v2M4.93 4.93l2.83 2.83M17.24 17.24l2.83 2.83M2 12h4M20 12h2M4.93 19.07l2.83-2.83M17.24 6.76l2.83-2.83"></path>
+        </svg>
+        Atualizar Senha
+    </button>
 </div>
 
 <div class="grid-container">
@@ -31,7 +36,6 @@
                 <th>nmBanco</th>
                 <th>server</th>
                 <th>user</th>
-                <th>passw</th>
             </tr>
         </thead>
         <tbody id="datasourceTable">
@@ -76,10 +80,6 @@
                 <input type="text" id="user" name="user" >
             </div>
 
-            <div class="form-group">
-                <label for="passw">Senha:</label>
-                <input type="text" id="passw" name="passw" >
-            </div>
             <div class="modal-actions">
                 <button type="button" class="secondary" onclick="hideModal()">Cancelar</button>
                 <button type="submit" class="primary">Salvar</button>
@@ -89,7 +89,47 @@
     </div>
 </div>
 
+<!-- Modal para Atualizar Senha -->
+<div id="updatePasswordModal" class="modal">
+    <div class="modal-content">
+        <h2>Atualizar Senha</h2>
+        <form id="updatePasswordForm">
+            <div class="form-group">
+                <label for="new_password">Nova Senha:</label>
+                <input type="password" id="new_password" name="new_password" maxlength="50" autocomplete="new-password">
+
+            </div>
+            <div class="form-group">
+                <label for="confirm_password">Confirmar Senha:</label>
+                <input type="password" id="confirm_password" name="confirm_password" maxlength="50" autocomplete="new-password">
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="secondary" onclick="hideUpdatePasswordModal()">Cancelar</button>
+                <button type="button" class="primary" onclick="updatePassword()">Atualizar</button>
+            </div>
+            <div id="passwordErrorMessage" class="error-message" style="display: none; color: red; margin-top: 10px;"></div>
+        </form>
+    </div>
+</div>
+
 <script>
+
+    function showUpdatePasswordModal() {
+        const key = getSelecteddatasource();
+        if (!key) {
+            alert('Por favor, selecione um Data Source para atualizar a senha.');
+            return;
+        }
+        hideModal(); // Fecha o outro modal para evitar sobreposição
+        document.getElementById('updatePasswordModal').classList.add('active');
+    }
+
+    function hideUpdatePasswordModal() {
+        document.getElementById('updatePasswordModal').classList.remove('active');
+        document.getElementById('new_password').value = '';
+        document.getElementById('confirm_password').value = '';
+        document.getElementById('passwordErrorMessage').style.display = 'none';
+    }
 
     function getSelecteddatasource() {
         const selected = document.querySelector('input[name="selectedUser"]:checked');
@@ -126,7 +166,6 @@
                     row.insertCell().innerText = user.nmBanco;
                     row.insertCell().innerText = user.server;
                     row.insertCell().innerText = user.user;
-                    row.insertCell().innerText = user.passw;
 
                 });
             })
@@ -135,14 +174,12 @@
     
 
     function showAddModal() {
+        hideUpdatePasswordModal();
         document.getElementById('modalTitle').textContent = 'Novo datasource';
         document.getElementById('datasourceForm').reset();
         document.getElementById('formModal').classList.add('active');
         document.getElementById('idDataSource').value = '';
-
         document.getElementById('idDataSource').readOnly = false;
-
-
         // Esconder mensagem de erro ao abrir modal
         document.getElementById('errorMessage').style.display = 'none';
         document.getElementById('errorMessage').innerHTML = '';
@@ -173,11 +210,7 @@
                 document.getElementById("nmBanco").value = datasource.nmBanco;
                 document.getElementById("server").value = datasource.server;
                 document.getElementById("user").value = datasource.user;
-                document.getElementById("passw").value = datasource.passw;
-
                 document.getElementById("idDataSource").style.display = "block";
-
-
                 document.getElementById('formModal').classList.add('active');
             })
 
@@ -188,14 +221,14 @@
         }
 
     function deleteSelected() {
-        const datasource = getSelecteddatasource();
-        if (!datasource) {
+        const key = getSelecteddatasource();
+        if (!key) {
             alert('Por favor, selecione um datasource para excluir.');
             return;
         }
 
         if (confirm('Tem certeza que deseja excluir este datasource?')) {
-            fetch(`/api/datasource/${datasource}`, {
+            fetch(`/api/datasource/${key.idDataSource}`, {
                 method: 'DELETE'
             }).then(() => {
                 loaddatasource();
@@ -239,12 +272,61 @@
     });
 });
 
-function showError(message) {
-    let errorDiv = document.getElementById('errorMessage');
-    errorDiv.style.display = 'block'; 
-    errorDiv.innerHTML = `<strong>Erro:</strong> ${message}`;
-}
-          
+    function showError(message) {
+        let errorDiv = document.getElementById('errorMessage');
+        errorDiv.style.display = 'block'; 
+        errorDiv.innerHTML = `<strong>Erro:</strong> ${message}`;
+    }
+
+    function updatePassword() {
+        const key = getSelecteddatasource();
+        if (!key) {
+            alert('Por favor, selecione um Data Source para atualizar a senha.');
+            return;
+        }
+
+        const idDataSource = key.idDataSource;
+        const newPassword = document.getElementById("new_password").value.trim();
+        const confirmPassword = document.getElementById("confirm_password").value.trim();
+
+        if (!newPassword || !confirmPassword) {
+            showPasswordError("A senha não pode estar vazia.");
+            return;
+        }
+        if (newPassword.length < 6) {
+            showPasswordError("A senha deve ter pelo menos 6 caracteres.");
+            return;
+        }
+        if (newPassword !== confirmPassword) {
+            showPasswordError("As senhas não coincidem.");
+            return;
+        }
+
+        fetch(`/api/datasource/update-password/${encodeURIComponent(idDataSource)}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ new_password: newPassword })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                showPasswordError("Erro ao atualizar senha: " + data.error);
+            } else {
+                alert("Senha atualizada com sucesso!");
+                hideUpdatePasswordModal();
+            }
+        })
+        .catch(error => console.error("Erro ao atualizar senha:", error));
+    }
+
+    function showPasswordError(message) {
+        let errorDiv = document.getElementById('passwordErrorMessage');
+        errorDiv.style.display = 'block';
+        errorDiv.innerHTML = `<strong>Erro:</strong> ${message}`;
+    }
+
 </script>
 
 {% endblock %}

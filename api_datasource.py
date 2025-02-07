@@ -2,6 +2,7 @@
 from flask import Blueprint, request, jsonify
 from sysdb import SessionLocal, DataSource
 from datetime import datetime, timezone
+from crypto_utils import encrypt_password, decrypt_password
 
 bp_datasource = Blueprint('datasource_api', __name__, url_prefix='/api/datasource')
 
@@ -21,7 +22,6 @@ def create_datasource():
             nmBanco=data['nmBanco'], 
             server=data['server'], 
             user=data['user'], 
-            passw=data['passw'],
             username=request.headers.get('username', 'admin'),
             dtAtualizacao=datetime.now(timezone.utc)
         )
@@ -38,6 +38,12 @@ def create_datasource():
 def get_datasource_list():
     session = SessionLocal()
     datasources = session.query(DataSource).all()
+    
+    # Descriptografar a senha antes de enviar os dados para o frontend
+    result = []
+    for datasource in datasources:
+        data = datasource.to_dict()
+        result.append(data)    
     session.close()
     return jsonify([datasource.to_dict() for datasource in datasources])
 
@@ -48,7 +54,9 @@ def get_datasource(idDataSource):
     datasource = session.query(DataSource).filter_by(idDataSource = idDataSource).first()
     session.close()
     if datasource:
-        return jsonify(datasource.to_dict())
+        data = datasource.to_dict()
+        return jsonify(data)
+    
     return jsonify({"error": "Registro não encontrado."}), 404
 
 # Atualizar um registro da tabela datasource
@@ -68,8 +76,7 @@ def update_datasource(idDataSource):
         datasource.nmBanco=data.get('nmBanco', datasource.nmBanco)
         datasource.server=data.get('server', datasource.server)
         datasource.user=data.get('user', datasource.user)
-        datasource.passw=data.get('passw', datasource.passw)
-        
+
         session.commit()
         session.close()
         return jsonify(success=True), 200
@@ -89,3 +96,34 @@ def delete_datasource(idDataSource):
     session.commit()
     session.close()
     return jsonify({"message": "Registro deletado com sucesso."})
+
+@bp_datasource.route('/update-password/<string:idDataSource>', methods=['PUT'])
+def update_password(idDataSource):
+    """
+    Atualiza a senha de um DataSource específico sem expor o valor na interface.
+    """
+    try:
+        data = request.json
+        new_password = data.get('new_password')
+
+        # Verificação: Senha não pode ser vazia
+        if not new_password:
+            return jsonify({"error": "A nova senha não pode estar vazia."}), 400
+
+        session = SessionLocal()
+        datasource = session.query(DataSource).filter_by(idDataSource=idDataSource).first()
+
+        if not datasource:
+            session.close()
+            return jsonify({"error": "Registro não encontrado."}), 404
+
+        # Criptografar a nova senha antes de salvar
+        datasource.passw = encrypt_password(new_password)
+        datasource.dtAtualizacao = datetime.now(timezone.utc)  # Atualizar timestamp
+
+        session.commit()
+        session.close()
+        return jsonify({"message": "Senha atualizada com sucesso."}), 200
+
+    except Exception as e:
+        return jsonify(success=False, error=str(e)), 500
