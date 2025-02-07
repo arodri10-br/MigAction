@@ -7,6 +7,7 @@ menu_items = [
     {"name": "SD Tipo Dados", "url": "/suppdatadet/TpDadoSD"},
     {"name": "SD Perfil User", "url": "/suppdatadet/PerfilUSR"},
     {"name": "Projetos", "url": "/projeto"},
+    {"name": "Processo", "url": "/processo"},
     {"name": "Usuários", "url": "/users"},
     {"name": "Gerar Form", "url": "/generate-code"},
     {"name": "Sobre", "url": "/about"},

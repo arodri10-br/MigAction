@@ -1,0 +1,239 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="mb-4">processo</h1>
+</div>
+<div class="toolbar">
+    <button onclick="showAddModal()" class="primary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Novo
+    </button>
+    <button onclick="editSelected()" class="primary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+        Editar
+    </button>
+    <button onclick="deleteSelected()" class="secondary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        Excluir
+    </button>
+</div>
+
+<div class="grid-container">
+    <table class="grid">
+        <thead>
+            <tr>
+                <th class="radio-cell"></th>
+                <th>idProjeto</th>
+                <th>ordem</th>
+                <th>dsProcesso</th>
+                <th>statusProcesso</th>
+                <th>dataExecucao</th>
+            </tr>
+        </thead>
+        <tbody id="processoTable">
+            <!-- Preenchido dinamicamente -->
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal de Formulário -->
+<div id="formModal" class="modal">
+    <div class="modal-content">
+        <h2 id="modalTitle">Novo "processo"</h2>
+        <form id="processoForm">
+            
+            <div class="form-group" id="idProjetoContainer">
+                <label for="idProjeto">idProjeto:</label>
+                <input type="number" id="idProjeto" name="idProjeto" readonly>
+            </div>
+
+            <div class="form-group" id="ordemContainer">
+                <label for="ordem">ordem:</label>
+                <input type="number" id="ordem" name="ordem" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="dsProcesso">dsProcesso:</label>
+                <input type="text" id="dsProcesso" name="dsProcesso" >
+            </div>
+
+            <div class="form-group">
+                <label for="statusProcesso">statusProcesso:</label>
+                <input type="text" id="statusProcesso" name="statusProcesso" >
+            </div>
+
+            <div class="form-group">
+                <label for="dataExecucao">dataExecucao:</label>
+                <input type="date" id="dataExecucao" name="dataExecucao" >
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="secondary" onclick="hideModal()">Cancelar</button>
+                <button type="submit" class="primary">Salvar</button>
+            </div>
+            <div id="errorMessage" class="error-message" style="display: none; color: red; margin-top: 10px;"></div>
+        </form>
+    </div>
+</div>
+
+<script>
+
+    function getSelectedprocesso() {
+        const selected = document.querySelector('input[name="selectedUser"]:checked');
+        if (!selected) {
+            return null;
+        }
+        // Divide a string pelo separador para obter todos valores da chave primária
+        const keyParts = selected.value.split('|');
+        return {
+
+            idProjeto: keyParts[0],
+            ordem: keyParts[1]
+        };
+
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadprocesso();
+    });
+    function loadprocesso() {
+        fetch('/api/processo/')
+            .then(response => response.json())
+            .then(data => {
+                const processoTable = document.getElementById('processoTable');
+                processoTable.innerHTML = '';
+                data.forEach(user => {
+                    const row = processoTable.insertRow();
+                    const radioCell = row.insertCell();
+                    radioCell.className = 'radio-cell';
+                    radioCell.innerHTML = `<input type="radio" name="selectedUser" value="${user.idProjeto}|${user.ordem}">`;
+
+                    row.insertCell().innerText = user.idProjeto;
+                    row.insertCell().innerText = user.ordem;
+                    row.insertCell().innerText = user.dsProcesso;
+                    row.insertCell().innerText = user.statusProcesso;
+                    row.insertCell().innerText = user.dataExecucao;
+
+                });
+            })
+        .catch(error => console.error('Erro ao carregar processo:', error));
+    }
+    
+
+    function showAddModal() {
+        document.getElementById('modalTitle').textContent = 'Novo processo';
+        document.getElementById('processoForm').reset();
+        document.getElementById('formModal').classList.add('active');
+        document.getElementById('idProjeto').value = '';
+        document.getElementById('ordem').value = '';
+
+        document.getElementById('idProjeto').readOnly = false;
+        document.getElementById('ordem').readOnly = false;
+
+
+        // Esconder mensagem de erro ao abrir modal
+        document.getElementById('errorMessage').style.display = 'none';
+        document.getElementById('errorMessage').innerHTML = '';
+    }
+    
+    function hideModal() {
+        document.getElementById('formModal').classList.remove('active');
+        //  Esconder e limpar a mensagem de erro ao fechar o modal
+        let errorDiv = document.getElementById('errorMessage');
+        errorDiv.style.display = 'none';
+        errorDiv.innerHTML = '';
+    }
+
+    function editSelected() {
+        const key = getSelectedprocesso();
+        if (!key) {
+            alert('Por favor, selecione uma linha para editar.');
+            return;
+        }
+        const url = `/api/processo/${key.idProjeto}/${key.ordem}`;
+        fetch(url)
+            .then(response => response.json())
+            .then(processo => {
+                document.getElementById('modalTitle').textContent = 'Editar processo';
+                document.getElementById("idProjeto").value = processo.idProjeto;
+                document.getElementById("ordem").value = processo.ordem;
+                document.getElementById("dsProcesso").value = processo.dsProcesso;
+                document.getElementById("statusProcesso").value = processo.statusProcesso;
+                document.getElementById("dataExecucao").value = processo.dataExecucao;
+
+                document.getElementById("idProjeto").style.display = "block";
+                document.getElementById("ordem").style.display = "block";
+
+
+                document.getElementById('formModal').classList.add('active');
+            })
+
+            .catch(error => {
+                showError('Erro ao carregar processo para edição.');
+                console.error('Erro ao carregar processo:', error);
+            });
+        }
+
+    function deleteSelected() {
+        const processo = getSelectedprocesso();
+        if (!processo) {
+            alert('Por favor, selecione um processo para excluir.');
+            return;
+        }
+
+        if (confirm('Tem certeza que deseja excluir este processo?')) {
+            fetch(`/api/processo/${processo}`, {
+                method: 'DELETE'
+            }).then(() => {
+                loadprocesso();
+            });
+        }
+    }
+       
+    document.getElementById('processoForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const processo = document.getElementById('idProjeto').value.trim();
+        const isEdit = document.getElementById('idProjeto').readOnly === true;
+        const method = isEdit ? 'PUT' : 'POST';
+        let url = '/api/processo/';
+        if (isEdit) {
+            const idProjeto = document.getElementById('idProjeto').value.trim();
+            const ordem = document.getElementById('ordem').value.trim();
+
+            url = `/api/processo/${encodeURIComponent(idProjeto)}/${encodeURIComponent(ordem)}`;
+        }            
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+
+        fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => { throw new Error(err.error || 'Erro desconhecido'); });
+        }
+        return response.json();
+    })
+    .then(() => {
+        hideModal();
+        loadprocesso();
+    })
+    .catch(error => {
+        showError(error.message);
+    });
+});
+
+function showError(message) {
+    let errorDiv = document.getElementById('errorMessage');
+    errorDiv.style.display = 'block'; 
+    errorDiv.innerHTML = `<strong>Erro:</strong> ${message}`;
+}
+          
+</script>
+
+{% endblock %}

@@ -2,7 +2,7 @@
 from flask import Blueprint, request, jsonify
 from sysdb import SessionLocal, DataSource
 from datetime import datetime, timezone
-from crypto_utils import encrypt_password, decrypt_password
+from crypto_utils import encrypt_password
 
 bp_datasource = Blueprint('datasource_api', __name__, url_prefix='/api/datasource')
 

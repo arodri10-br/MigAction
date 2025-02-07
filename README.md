@@ -50,6 +50,8 @@ Este é um aplicativo web desenvolvido em Python usando Flask e SQLAlchemy para 
 
 ## Modelo de Dados
 
+https://app.brmodeloweb.com/#!/publicview/67992aa4e177a1ec3519582c
+
 ![Modelo de Dados](docs/datamodel.png)
 
 ## Uso

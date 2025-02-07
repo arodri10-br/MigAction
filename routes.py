@@ -80,3 +80,7 @@ def call_Suppdataconfig():
 @bp_routes.route('/suppdatadet/<string:codSupData>')
 def call_Suppdatadet(codSupData=None):
     return render_template('form_suppdatadet.html', menu_items=menu_items, codSupData=codSupData)
+
+@bp_routes.route('/processo')
+def call_Processo():
+    return render_template('form_processo.html', menu_items=menu_items)

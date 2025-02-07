@@ -1,14 +1,10 @@
 from sqlalchemy import create_engine, Column, String, Integer, Date, ForeignKey, Text, Boolean
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from cryptography.fernet import Fernet
 from datetime import date
-
+from sqlalchemy import create_engine, Column, String, Integer, Date, ForeignKey, Text, Boolean
+from crypto_utils import encrypt_password, decrypt_password
 Base = declarative_base()
-
-# Geração da chave de criptografia (deve ser armazenada de forma segura)
-key = b'GY55m6boCz8OcPZIFW2QXWreTsvhn36g8AbPBGJDBYQ='  # Fernet.generate_key()
-cipher_suite = Fernet(key)
 
 class Usuario(Base):
     __tablename__ = 'usuario'
@@ -27,10 +23,10 @@ class Usuario(Base):
 
     @passw.setter
     def passw(self, password):
-        self.passw_encrypted = cipher_suite.encrypt(password.encode()).decode()
+        self.passw_encrypted = encrypt_password(password)
 
     def get_password(self):
-        return cipher_suite.decrypt(self.passw_encrypted.encode()).decode()
+        return decrypt_password(self.passw_encrypted.encode()).decode()
 
     def to_dict(self):
         return {
@@ -184,8 +180,8 @@ class SuppDataDet(Base):
             "dtAtualizacao": self.dtAtualizacao.isoformat() if self.dtAtualizacao else None,
         }
 
-class Processos(Base):
-    __tablename__ = 'processos'
+class Script(Base):
+    __tablename__ = 'script'
 
     idProjeto = Column(Integer, ForeignKey('projeto.idProjeto'), primary_key=True)
     seq = Column(Integer, primary_key=True)  # Removido autoincrement=True
@@ -233,10 +229,10 @@ class DataSource(Base):
 
     @passw.setter
     def passw(self, password):
-        self.passw_encrypted = cipher_suite.encrypt(password.encode()).decode()
+        self.passw_encrypted = encrypt_password(password)
 
     def get_password(self):
-        return cipher_suite.decrypt(self.passw_encrypted.encode()).decode()
+        return decrypt_password(self.passw_encrypted.encode()).decode()
 
     def to_dict(self):
         return {
@@ -282,6 +278,28 @@ class Carga(Base):
             "username": self.username,
         }
 
+class Processo(Base):
+    __tablename__ = 'processo'
+
+    idProjeto = Column(Integer, ForeignKey('projeto.idProjeto'), primary_key=True)
+    ordem = Column(Integer, primary_key=True)
+    dsProcesso = Column(String, nullable=False)
+    statusProcesso = Column(String, nullable=False)
+    dataExecucao = Column(Date)
+    username = Column(String(10), ForeignKey('usuario.username'))
+    dtAtualizacao = Column(Date)
+
+    def to_dict(self):
+        return {
+            "idProjeto": self.idProjeto,
+            "ordem": self.ordem,
+            "dsProcesso": self.dsProcesso,
+            "statusProcesso": self.statusProcesso,
+            "dataExecucao": self.dataExecucao.isoformat() if self.dataExecucao else None,
+            "username": self.username,
+            "dtAtualizacao": self.dtAtualizacao.isoformat() if self.dtAtualizacao else None,
+        }
+
 # Função para verificar e criar o usuário admin
 def create_admin_user(session):
     admin_user = session.query(Usuario).filter_by(username='admin').first()
@@ -292,7 +310,7 @@ def create_admin_user(session):
             email='admin@actionsys.com.br',
             perfil='admin',
             status='A',
-            passw_encrypted=cipher_suite.encrypt('admin'.encode()).decode()
+            passw_encrypted=encrypt_password('admin')
         )
         session.add(admin_user)
         session.commit()
@@ -309,3 +327,6 @@ def init_db():
 
 # Inicializa o banco de dados e cria o usuário admin se necessário
 init_db()
+
+
+
