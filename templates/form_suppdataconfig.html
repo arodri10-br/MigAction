@@ -25,6 +25,12 @@
         </svg>
         Excluir
     </button>
+    <button onclick="editData()" class="primary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v4M12 20v2M4.93 4.93l2.83 2.83M17.24 17.24l2.83 2.83M2 12h4M20 12h2M4.93 19.07l2.83-2.83M17.24 6.76l2.83-2.83"></path>
+        </svg>
+        Editar Dados
+    </button>
 </div>
 
 <div class="grid-container">
@@ -248,6 +254,15 @@
             showError(error.message);
         });
     });
+
+    function editData() {
+        var codSupData = getSelectedsuppdataconfig();
+        if (!codSupData) {
+            alert("Erro: codSupData não encontrado.");
+            return;
+        }
+        window.location.href = `/suppdatadet/${encodeURIComponent(codSupData)}`;
+    }
 
     function showError(message) {
         let errorDiv = document.getElementById('errorMessage');
