@@ -56,16 +56,13 @@
         <div class="form-group" id="IdProjetoContainer">
             <label for="IdProjeto">IdProjeto:</label>
             <input type="number" id="IdProjeto" name="IdProjeto" value="{{ session.idProjeto }}" readonly>
+            <!-- 
         </div>
 
-        <div class="form-group" id="IdProjetoContainer" style="display: none;">
-          <label for="IdProjeto">IdProjeto:</label>
-          <input type="number" id="IdProjeto" name="IdProjeto" readonly>
-        </div>
-  
-        <div class="form-group" id="codSupDataContainer" style="display: none;">
-          <label for="codSupData">codSupData:</label>
-          <input type="text" id="codSupData" name="codSupData" readonly maxlength="20">
+        <div class="form-group" id="codSupDataContainer" >
+            -->
+          <label for="codSupData">Sup Data:</label>
+          <input type="text" id="codSupData" name="codSupData" value="{{ codSupData }}" readonly >
         </div>
   
         <div class="form-group">
@@ -267,7 +264,7 @@
     
 
     function showAddModal() {
-        document.getElementById('modalTitle').textContent = 'Novo suppdatadet';
+        //document.getElementById('modalTitle').textContent = 'Novo suppdatadet';
         document.getElementById('suppdatadetForm').reset();
         //document.getElementById('IdProjeto').value = '';
         document.getElementById('formModal').classList.add('active');
@@ -359,8 +356,8 @@
        
     document.getElementById('suppdatadetForm').addEventListener('submit', function(event) {
         event.preventDefault();
-        const suppdatadet = document.getElementById('IdProjeto').value.trim();
-        const isEdit = document.getElementById('IdProjeto').readOnly === true;  
+        const suppdatadet = document.getElementById('Chave1').value.trim();
+        const isEdit = document.getElementById('Chave1').readOnly === true;  
         const method = isEdit ? 'PUT' : 'POST';
 
         let url = '/api/suppdatadet/';
