@@ -19,7 +19,7 @@ def create_processo():
             ordem=data['ordem'], 
             dsProcesso=data['dsProcesso'], 
             statusProcesso=data['statusProcesso'], 
-            dataExecucao=data['dataExecucao'],
+            dataExecucao=data.get('dataExecucao', None),
             username=request.headers.get('username', 'admin'),
             dtAtualizacao=datetime.now(timezone.utc)
         )
@@ -32,10 +32,10 @@ def create_processo():
         return jsonify(success=False, error=str(e)), 500
 
 # Obter processo
-@bp_processo.route('/', methods=['GET'])
-def get_processo_list():
+@bp_processo.route('/<string:idProjeto>', methods=['GET'])
+def get_processo_list(idProjeto):
     session = SessionLocal()
-    processos = session.query(Processo).all()
+    processos = session.query(Processo).filter_by(idProjeto = idProjeto).all()
     session.close()
     return jsonify([processo.to_dict() for processo in processos])
 
@@ -73,10 +73,10 @@ def update_processo(idProjeto,ordem):
         return jsonify(success=False, error=str(e)), 500
 
 # Excluir um Registro da tabela processo
-@bp_processo.route('/<string:idProjeto>', methods=['DELETE'])
-def delete_processo(idProjeto):
+@bp_processo.route('/<string:idProjeto>/<string:ordem>', methods=['DELETE'])
+def delete_processo(idProjeto,ordem):
     session = SessionLocal()
-    processo = session.query(Processo).filter_by(idProjeto=idProjeto).first()
+    processo = session.query(Processo).filter_by(idProjeto=idProjeto,ordem = ordem).first()
     if not processo:
         session.close()
         return jsonify({"error": "Registro não encontrado."}), 404

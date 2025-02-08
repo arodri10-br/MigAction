@@ -26,7 +26,7 @@ class Usuario(Base):
         self.passw_encrypted = encrypt_password(password)
 
     def get_password(self):
-        return decrypt_password(self.passw_encrypted.encode()).decode()
+        return decrypt_password(self.passw_encrypted)
 
     def to_dict(self):
         return {
