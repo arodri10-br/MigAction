@@ -5,6 +5,7 @@
 <div class="page-header">
     <h1 id="formTitle" class="mb-4">Manutenção Base Suplementar</h1>
 </div>
+
 <div class="toolbar">
     <button onclick="showAddModal()" class="primary">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
@@ -227,7 +228,10 @@
     });
     function loadsuppdatadet() {
         var codSupData = "{{ codSupData }}";
-        var idProjeto = "{{ session.idProjeto }}"; 
+        var idProjeto = "{{ idProjeto }}"; 
+        if (idProjeto === "None") {
+            idProjeto = "{{ session.idProjeto }}"; 
+        }
         //console.log("Valor de codSupData:", codSupData);    
         //console.log("Enviando idProjeto:", idProjeto);
         var url = `/api/suppdatadet/${encodeURIComponent(idProjeto)}/${encodeURIComponent(codSupData)}`;
@@ -457,7 +461,15 @@ function updateField(field, value) {
 
     }
 }
+    // Ocultar a toolbar se o usuário não estiver logado na mesma sessão do projeto
+    document.addEventListener("DOMContentLoaded", function() {
+        var sessionIdProjeto = "{{ session.idProjeto }}";
+        var idProjeto = "{{ idProjeto }}";
 
+        if (sessionIdProjeto !== idProjeto && idProjeto !== "None") {
+            document.querySelector(".toolbar").style.display = "none";
+        }
+    });
 
 </script>
 

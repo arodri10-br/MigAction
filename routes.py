@@ -78,8 +78,9 @@ def call_Suppdataconfig():
     return render_template('form_suppdataconfig.html', menu_items=menu_items)
 
 @bp_routes.route('/suppdatadet/<string:codSupData>')
-def call_Suppdatadet(codSupData=None):
-    return render_template('form_suppdatadet.html', menu_items=menu_items, codSupData=codSupData)
+@bp_routes.route('/suppdatadet/<string:codSupData>/<string:idProjeto>')
+def call_Suppdatadet(codSupData=None, idProjeto=None):
+    return render_template('form_suppdatadet.html', menu_items=menu_items, codSupData=codSupData, idProjeto=idProjeto)
 
 @bp_routes.route('/processo')
 def call_Processo():
