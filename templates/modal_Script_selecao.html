@@ -52,13 +52,9 @@
            <script>
              document.getElementById('Campo2Update').addEventListener('change', function() {
                const selectedValue = this.value;
-               // Aqui você deve definir idProjeto, ordem e seq conforme sua lógica
-               const idProjeto = '1'; 
-               const ordem = '1'; 
-               const seq = '1'; 
-               
+               const key = getSelectedscript();
                if (selectedValue === '1' || selectedValue === '2') {
-                 fetch(`/api/script/${idProjeto}/${ordem}/${seq}`)
+                 fetch(`/api/script/${key.idProjeto}/${key.ordem}/${key.seq}`)
                    .then(response => response.json())
                    .then(data => {
                      if (selectedValue === '1') {
@@ -126,6 +122,8 @@
       lineWrapping: true  // Garante que o editor não expanda horizontalmente
     });
     
+    sqlEditor.getWrapperElement().addEventListener("touchstart", function(event) {}, { passive: true });
+
     // Popula o combo box DataSource
     fetch('/api/datasource/')
       .then(response => response.json())
@@ -216,12 +214,18 @@
         alert('Preencha todos os campos antes de salvar.');
         return;
      }
-     fetch('/api/script/selDados', {
+
+     const key = getSelectedscript();
+     const url = `/api/script/${key.idProjeto}/${key.ordem}/${key.seq}`;
+     const updateField = document.getElementById('Campo2Update').value === '1' ? { selDados: sqlCode } : { cmdInsert: sqlCode };
+     fetch(url, {
        method: 'PUT',
        headers: { 'Content-Type': 'application/json' },
        body: JSON.stringify({
-         datasource: datasource,
-         sql: sqlCode
+          idProjeto:  key.idProjeto,
+          ordem:      key.ordem,
+          seq:        key.seq,
+          ...updateField
        })
      })
      .then(response => {

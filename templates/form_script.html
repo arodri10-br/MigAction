@@ -18,6 +18,10 @@
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
         Excluir
     </button>
+    <button onclick="editScript()" class="primary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12" y2="16"></line></svg>
+        Seleção
+    </button>
 </div>
 
 <div class="grid-container">
@@ -34,8 +38,6 @@
                 <th>Desc. Processo</th>
                 <th>Responsavel</th>
                 <th>Programa</th>
-                <th>Seleção</th>
-                <th>Inclusão</th>
             </tr>
         </thead>
         <tbody id="scriptTable">
@@ -188,6 +190,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         loadscript();
     });
+
     function loadscript() {
         fetch('/api/script/')
             .then(response => response.json())
@@ -208,20 +211,6 @@
                     row.insertCell().innerText = user.descProcesso;
                     row.insertCell().innerText = user.responsavel;
                     row.insertCell().innerText = user.programa;
-
-                    // Criar botão "Seleção"
-                    let btnSelecao = document.createElement('button');
-                    btnSelecao.classList.add('btn-action', 'btn-selecao');
-                    btnSelecao.innerHTML = '<i class="fa fa-search"></i> Seleção';
-                    btnSelecao.onclick = function() { openSelecaoModal(user.idProjeto, user.ordem, user.seq); }
-                    row.insertCell().appendChild(btnSelecao);
-
-                    // Criar botão "Atualização"
-                    let btnAtualizacao = document.createElement('button');
-                    btnAtualizacao.classList.add('btn-action', 'btn-atualizacao');
-                    btnAtualizacao.innerHTML = '<i class="fa fa-edit"></i> Atualização';
-                    btnAtualizacao.onclick = function() { openAtualizacaoModal(user.idProjeto, user.ordem, user.seq); }
-                    row.insertCell().appendChild(btnAtualizacao);
 
                 });
             })
@@ -245,18 +234,17 @@
         document.getElementById('errorMessage').innerHTML = '';
     }
 
-    function openSelecaoModal() {
+    function editScript(){
+        const key = getSelectedscript();
+        if (!key) {
+            alert('Por favor, selecione uma linha para editar.');
+            return;
+        }
         document.getElementById('selecaoForm').reset();
         document.getElementById('queryResultsContainer').style.display = 'none';
         document.getElementById('formModalSelecao').classList.add('active');
     }
     
-    function openAtualizacaoModal() {
-        document.getElementById('atualizacaoForm').reset();
-        document.getElementById('queryResultsContainerAtualizacao').style.display = 'none';
-        document.getElementById('formModalAtualizacao').classList.add('active');
-    }
-
     function hideModal() {
         document.getElementById('formModal').classList.remove('active');
         //  Esconder e limpar a mensagem de erro ao fechar o modal
@@ -363,6 +351,5 @@ function showError(message) {
 </script>
 
 {% include "modal_Script_selecao.html" %}
-{% include "modal_Script_atualizacao.html" %}
 
 {% endblock %}
