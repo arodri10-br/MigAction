@@ -118,7 +118,8 @@ def update_password(idDataSource):
             return jsonify({"error": "Registro não encontrado."}), 404
 
         # Criptografar a nova senha antes de salvar
-        datasource.passw = encrypt_password(new_password)
+        #datasource.passw = encrypt_password(new_password)
+        datasource.passw = new_password
         datasource.dtAtualizacao = datetime.now(timezone.utc)  # Atualizar timestamp
 
         session.commit()

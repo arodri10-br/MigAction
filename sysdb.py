@@ -234,9 +234,6 @@ class DataSource(Base):
         self.passw_encrypted = encrypt_password(password)
 
     def get_password(self):
-        return decrypt_password(self.passw_encrypted)
-
-    def get_password(self):
         """Retorna a senha descriptografada ou uma string vazia se for None"""
         if not self.passw_encrypted:  # Se for None, retorna string vazia
             return ""
