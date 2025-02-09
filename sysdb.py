@@ -184,7 +184,8 @@ class Script(Base):
     __tablename__ = 'script'
 
     idProjeto = Column(Integer, ForeignKey('projeto.idProjeto'), primary_key=True)
-    seq = Column(Integer, primary_key=True)  # Removido autoincrement=True
+    ordem = Column(Integer, primary_key=True)
+    seq = Column(Integer, primary_key=True) 
     Tabela = Column(String(30), nullable=False)
     Modulo = Column(String(15))
     descProcesso = Column(String(150))
@@ -199,6 +200,7 @@ class Script(Base):
         return {
             "idProjeto": self.idProjeto,
             "seq": self.seq,
+            "ordem": self.ordem,
             "Tabela": self.Tabela,
             "Modulo": self.Modulo,
             "descProcesso": self.descProcesso,
@@ -219,7 +221,7 @@ class DataSource(Base):
     nmBanco = Column(String(30))
     server = Column(String(50))
     user = Column(String(20))
-    passw = Column(String(255))
+    passw_encrypted = Column(String(255), nullable=False)
     username = Column(String(10), ForeignKey('usuario.username'))
     dtAtualizacao = Column(Date)
 
@@ -232,7 +234,21 @@ class DataSource(Base):
         self.passw_encrypted = encrypt_password(password)
 
     def get_password(self):
-        return decrypt_password(self.passw_encrypted.encode()).decode()
+        return decrypt_password(self.passw_encrypted)
+
+    def get_password(self):
+        # Descriptografa a senha armazenada internamente
+        return decrypt_password(self._passw)
+
+    @property
+    def connection_string(self):
+        # Usa o método get_password para obter a senha descriptografada
+        senha = self.get_password() or ""
+        if self.TpBanco == "Oracle":
+            return f"oracle+cx_oracle://{self.user}:{senha}@{self.server}/{self.nmBanco}"
+        elif self.TpBanco == "SQLITE3":
+            return f"sqlite:///{self.nmBanco}"
+        return "Tipo de banco desconhecido"
 
     def to_dict(self):
         return {

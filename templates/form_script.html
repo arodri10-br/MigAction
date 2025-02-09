@@ -1,0 +1,368 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="mb-4">Manutenção de Scripts</h1>
+</div>
+<div class="toolbar">
+    <button onclick="showAddModal()" class="primary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Novo
+    </button>
+    <button onclick="editSelected()" class="primary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+        Editar
+    </button>
+    <button onclick="deleteSelected()" class="secondary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        Excluir
+    </button>
+</div>
+
+<div class="grid-container">
+    <table class="grid">
+        <thead><td-search-input placeholder="Search" [showUnderline]="false" [debounce]="500" (searchDebounce)="onSearch(event)" (clear)="onClear()">
+        </td-search-input>
+            <tr>
+                <th class="radio-cell"></th>
+                <th>idProjeto</th>
+                <th>Ordem</th>
+                <th>Sequencia</th>
+                <th>Tabela</th>
+                <th>Modulo</th>
+                <th>Desc. Processo</th>
+                <th>Responsavel</th>
+                <th>Programa</th>
+                <th>Seleção</th>
+                <th>Inclusão</th>
+            </tr>
+        </thead>
+        <tbody id="scriptTable">
+            <!-- Preenchido dinamicamente -->
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal de Formulário -->
+<div id="formModal" class="modal">
+    <div class="modal-content">
+        <h2 id="modalTitle">Novo "Script"</h2>
+        <form id="scriptForm">
+            
+            <div class="form-group" id="idKeyContainer">
+                <label for="idProjeto">idProjeto:</label>
+                <input type="number" id="idProjeto" name="idProjeto" value="{{idProjeto}}" readonly>
+                <label for="ordem">Ordem:</label>
+                <input type="number" id="ordem" name="ordem" value="{{ordem}}" readonly>
+            </div>
+
+            <div class="form-group" id="TableContainer">
+                <label for="seq">Sequencia:</label>
+                <input type="number" id="seq" name="seq" readonly>
+                <label for="Tabela">Tabela:</label>
+                <input type="text" id="Tabela" name="Tabela" >
+            </div>
+            <div class="form-group">
+                <label for="Modulo">Modulo:</label>
+                <select id="Modulo" name="Modulo"></select>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        fetch('/api/suppdatadet/0/Modulo')
+                            .then(response => response.json())
+                            .then(data => {
+                                const moduloSelect = document.getElementById('Modulo');
+                                data.forEach(item => {
+                                    const option = document.createElement('option');
+                                    option.value = item.Chave1;
+                                    option.text = item.Valor1;
+                                    moduloSelect.appendChild(option);
+                                });
+                            })
+                            .catch(error => console.error('Erro ao carregar Modulo:', error));
+                    });
+                </script>
+            </div>
+
+            <div class="form-group">
+                <label for="descProcesso">Desc Processo:</label>
+                <input type="text" id="descProcesso" name="descProcesso" >
+            </div>
+
+            <div class="form-group">
+                <label for="responsavel">Responsavel:</label>
+                <input type="text" id="responsavel" name="responsavel" >
+            </div>
+
+            <div class="form-group">
+                <label for="programa">Programa:</label>
+                <input type="text" id="programa" name="programa" >
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="secondary" onclick="hideModal()">Cancelar</button>
+                <button type="submit" class="primary">Salvar</button>
+            </div>
+            <div id="errorMessage" class="error-message" style="display: none; color: red; margin-top: 10px;"></div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .form-group {
+        display: flex;
+        align-items: center;
+        gap: 10px; /* Espaçamento entre os elementos */
+        margin-bottom: 10px; /* Espaçamento entre os grupos de formulário */
+    }
+
+    .form-group label {
+        width: 100px; /* Define um tamanho fixo para os labels */
+        text-align: right; /* Alinha os textos à direita */
+        white-space: nowrap; /* Evita quebras de linha */
+    }
+
+    .form-group input,
+    .form-group select {
+        flex: 1; /* Faz os inputs ocuparem o espaço disponível */
+        min-width: 150px; /* Define um tamanho mínimo */
+        padding: 6px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+    }
+
+    /* Botões de visualizar e atualizar */
+
+    .btn-action {
+        display: flex;
+        align-items: center;
+        gap: 5px; /* Espaçamento entre ícone e texto */
+        padding: 8px 12px;
+        font-size: 14px;
+        font-weight: bold;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .btn-selecao {
+        background-color: #007bff; /* Azul */
+        color: white;
+    }
+
+    .btn-atualizacao {
+        background-color: #28a745; /* Verde */
+        color: white;
+    }
+
+    .btn-action i {
+        font-size: 16px;
+    }
+
+    .btn-action:hover {
+        opacity: 0.8;
+        transform: scale(1.05);
+    }
+
+</style>
+
+<script>
+
+    function getSelectedscript() {
+        const selected = document.querySelector('input[name="selectedUser"]:checked');
+        if (!selected) {
+            return null;
+        }
+        // Divide a string pelo separador para obter todos valores da chave primária
+        const keyParts = selected.value.split('|');
+        return {
+
+            idProjeto: keyParts[0],
+            ordem: keyParts[1],
+            seq: keyParts[2]
+        };
+
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadscript();
+    });
+    function loadscript() {
+        fetch('/api/script/')
+            .then(response => response.json())
+            .then(data => {
+                const scriptTable = document.getElementById('scriptTable');
+                scriptTable.innerHTML = '';
+                data.forEach(user => {
+                    const row = scriptTable.insertRow();
+                    const radioCell = row.insertCell();
+                    radioCell.className = 'radio-cell';
+                    radioCell.innerHTML = `<input type="radio" name="selectedUser" value="${user.idProjeto}|${user.ordem}|${user.seq}">`;
+
+                    row.insertCell().innerText = user.idProjeto;
+                    row.insertCell().innerText = user.ordem;
+                    row.insertCell().innerText = user.seq;
+                    row.insertCell().innerText = user.Tabela;
+                    row.insertCell().innerText = user.Modulo;
+                    row.insertCell().innerText = user.descProcesso;
+                    row.insertCell().innerText = user.responsavel;
+                    row.insertCell().innerText = user.programa;
+
+                    // Criar botão "Seleção"
+                    let btnSelecao = document.createElement('button');
+                    btnSelecao.classList.add('btn-action', 'btn-selecao');
+                    btnSelecao.innerHTML = '<i class="fa fa-search"></i> Seleção';
+                    btnSelecao.onclick = function() { openSelecaoModal(user.idProjeto, user.ordem, user.seq); }
+                    row.insertCell().appendChild(btnSelecao);
+
+                    // Criar botão "Atualização"
+                    let btnAtualizacao = document.createElement('button');
+                    btnAtualizacao.classList.add('btn-action', 'btn-atualizacao');
+                    btnAtualizacao.innerHTML = '<i class="fa fa-edit"></i> Atualização';
+                    btnAtualizacao.onclick = function() { openAtualizacaoModal(user.idProjeto, user.ordem, user.seq); }
+                    row.insertCell().appendChild(btnAtualizacao);
+
+                });
+            })
+        .catch(error => console.error('Erro ao carregar script:', error));
+    }
+    
+
+    function showAddModal() {
+        document.getElementById('modalTitle').textContent = 'Novo Script';
+        document.getElementById('scriptForm').reset();
+        document.getElementById('formModal').classList.add('active');
+        document.getElementById('seq').value = '';
+
+        document.getElementById('idProjeto').readOnly = true;
+        document.getElementById('ordem').readOnly = true;
+        document.getElementById('seq').readOnly = false;
+
+
+        // Esconder mensagem de erro ao abrir modal
+        document.getElementById('errorMessage').style.display = 'none';
+        document.getElementById('errorMessage').innerHTML = '';
+    }
+
+    function openSelecaoModal() {
+        document.getElementById('selecaoForm').reset();
+        document.getElementById('queryResultsContainer').style.display = 'none';
+        document.getElementById('formModalSelecao').classList.add('active');
+    }
+    
+    function openAtualizacaoModal() {
+        document.getElementById('atualizacaoForm').reset();
+        document.getElementById('queryResultsContainerAtualizacao').style.display = 'none';
+        document.getElementById('formModalAtualizacao').classList.add('active');
+    }
+
+    function hideModal() {
+        document.getElementById('formModal').classList.remove('active');
+        //  Esconder e limpar a mensagem de erro ao fechar o modal
+        let errorDiv = document.getElementById('errorMessage');
+        errorDiv.style.display = 'none';
+        errorDiv.innerHTML = '';
+    }
+
+    function editSelected() {
+        const key = getSelectedscript();
+        if (!key) {
+            alert('Por favor, selecione uma linha para editar.');
+            return;
+        }
+        const url = `/api/script/${key.idProjeto}/${key.ordem}/${key.seq}`;
+        fetch(url)
+            .then(response => response.json())
+            .then(script => {
+                document.getElementById('modalTitle').textContent = 'Editar Manutenção de Scripts';
+                document.getElementById("idProjeto").value = script.idProjeto;
+                document.getElementById("ordem").value = script.ordem;
+                document.getElementById("seq").value = script.seq;
+                document.getElementById("Tabela").value = script.Tabela;
+                document.getElementById("Modulo").value = script.Modulo;
+                document.getElementById("descProcesso").value = script.descProcesso;
+                document.getElementById("responsavel").value = script.responsavel;
+                document.getElementById("programa").value = script.programa;
+
+                document.getElementById("idProjeto").style.display = "block";
+                document.getElementById("ordem").style.display = "block";
+                document.getElementById("seq").style.display = "block";
+                document.getElementById("seq").readOnly = true;
+
+                document.getElementById('formModal').classList.add('active');
+            })
+
+            .catch(error => {
+                showError('Erro ao carregar script para edição.');
+                console.error('Erro ao carregar script:', error);
+            });
+        }
+
+    function deleteSelected() {
+        const key = getSelectedscript();
+        if (!key) {
+            alert('Por favor, selecione uma linha para editar.');
+            return;
+        }
+        const url = `/api/script/${key.idProjeto}/${key.ordem}/${key.seq}`;
+
+        if (confirm('Tem certeza que deseja excluir este script?')) {
+            fetch(url, {
+                method: 'DELETE'
+            }).then(() => {
+                loadscript();
+            });
+        }
+    }
+       
+    document.getElementById('scriptForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const script = document.getElementById('seq').value.trim();
+        const isEdit = document.getElementById('seq').readOnly === true;
+        const method = isEdit ? 'PUT' : 'POST';
+        let url = '/api/script/';
+        if (isEdit) {
+            const idProjeto = document.getElementById('idProjeto').value.trim();
+            const ordem = document.getElementById('ordem').value.trim();
+            const seq = document.getElementById('seq').value.trim();
+
+            url = `/api/script/${encodeURIComponent(idProjeto)}/${encodeURIComponent(ordem)}/${encodeURIComponent(seq)}`;
+        }            
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+
+        fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => { throw new Error(err.error || 'Erro desconhecido'); });
+        }
+        return response.json();
+    })
+    .then(() => {
+        hideModal();
+        loadscript();
+    })
+    .catch(error => {
+        showError(error.message);
+    });
+});
+
+function showError(message) {
+    let errorDiv = document.getElementById('errorMessage');
+    errorDiv.style.display = 'block'; 
+    errorDiv.innerHTML = `<strong>Erro:</strong> ${message}`;
+}
+          
+</script>
+
+{% include "modal_Script_selecao.html" %}
+{% include "modal_Script_atualizacao.html" %}
+
+{% endblock %}

@@ -85,3 +85,7 @@ def call_Suppdatadet(codSupData=None, idProjeto=None):
 @bp_routes.route('/processo')
 def call_Processo():
     return render_template('form_processo.html', menu_items=menu_items)
+
+@bp_routes.route('/script/<string:idProjeto>/<string:ordem>')
+def call_Script(idProjeto, ordem):
+    return render_template('form_script.html', menu_items=menu_items, idProjeto=idProjeto, ordem=ordem)
