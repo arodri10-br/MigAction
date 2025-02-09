@@ -111,27 +111,25 @@ def validate_sql():
         data = request.json
         idDataSource = data.get('idDataSource')
         sql = data.get('sql')
-        page = data.get('page', 1)
+
         session = SessionLocal()
-        datasource = session.query(DataSource).filter_by(idDataSource = idDataSource).first()
+        datasource = session.query(DataSource).filter_by(idDataSource=idDataSource).first()
         session.close()
 
         if not datasource:
             return jsonify({"error": "Registro do Data Source não encontrado."}), 404
+
         strConn = datasource.connection_string
-        print("String de conexão:", strConn)
-
         # Criar engine do SQLAlchemy com a conexão correta
-        engine = create_engine(datasource.connection_string)
+        engine = create_engine(strConn)
 
-        # Calculate offset for pagination
-        offset = (int(page) - 1) * rows_per_page
-
-        # Execute SQL query with pagination
+        # Executar SQL sem paginação
         with engine.connect() as connection:
-            result = connection.execute(text(sql).execution_options(autocommit=True).limit(rows_per_page).offset(offset))
+            #result = connection.execute(text(sql))
+            result = connection.execute(text(sql)).mappings().all()
             data = [dict(row) for row in result]
 
         return jsonify(data)
+    
     except Exception as e:
         return jsonify(success=False, error=str(e)), 500

@@ -237,9 +237,12 @@ class DataSource(Base):
         return decrypt_password(self.passw_encrypted)
 
     def get_password(self):
-        # Descriptografa a senha armazenada internamente
-        return decrypt_password(self._passw)
+        """Retorna a senha descriptografada ou uma string vazia se for None"""
+        if not self.passw_encrypted:  # Se for None, retorna string vazia
+            return ""
 
+        return decrypt_password(self.passw_encrypted)
+    
     @property
     def connection_string(self):
         # Usa o método get_password para obter a senha descriptografada

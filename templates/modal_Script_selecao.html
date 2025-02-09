@@ -9,7 +9,7 @@
   <div class="modal-content" style="width: 90%; max-width: 1200px; margin: auto;">
     <h2>Seleção</h2>
     <form id="selecaoForm">
-      <!-- ComboBox DataSource -->
+      <!-- ComboBox DataSource e outro select para atualização -->
       <div class="form-group" style="width: 50%;">
          <label for="datasource">Data Source:</label>
          <select id="datasource" name="datasource" class="form-control">
@@ -17,66 +17,55 @@
          </select>
          <label for="Campo2Update">Data Source:</label>
          <select id="Campo2Update" name="Campo2Update" class="form-control">
-          <option value="">Selecione...</option>
-          <option value="1">Seleção</option>
-          <option value="2">Atualização</option>
-          <script>
-            document.getElementById('Campo2Update').addEventListener('change', function() {
-              const selectedValue = this.value;
-
-              /*
-
-              Aqui tem que definir o idProjeto, ordem e seq conforme a lógica da sua aplicação, vou mudar o botão para a toolbar e usar o Key.
-
-              */
-              const idProjeto = '1'; 
-              const ordem = '1'; 
-              const seq = '1'; 
-
-              if (selectedValue === '1' || selectedValue === '2') {
-                fetch(`/api/script/${idProjeto}/${ordem}/${seq}`)
-                  .then(response => response.json())
-                  .then(data => {
-                    if (selectedValue === '1') {
-                      sqlEditor.setValue(data.selDados || '');
-                    } else if (selectedValue === '2') {
-                      sqlEditor.setValue(data.cmdInsert || '');
-                    }
-                  })
-                  .catch(error => console.error('Erro ao carregar dados:', error));
-              } else {
-                sqlEditor.setValue('');
-              }
-            });
-          </script>
-        </select>
+           <option value="">Selecione...</option>
+           <option value="1">Seleção</option>
+           <option value="2">Atualização</option>
+           <script>
+             document.getElementById('Campo2Update').addEventListener('change', function() {
+               const selectedValue = this.value;
+               // Aqui você deve definir idProjeto, ordem e seq conforme sua lógica
+               const idProjeto = '1'; 
+               const ordem = '1'; 
+               const seq = '1'; 
+               
+               if (selectedValue === '1' || selectedValue === '2') {
+                 fetch(`/api/script/${idProjeto}/${ordem}/${seq}`)
+                   .then(response => response.json())
+                   .then(data => {
+                     if (selectedValue === '1') {
+                       sqlEditor.setValue(data.selDados || '');
+                     } else if (selectedValue === '2') {
+                       sqlEditor.setValue(data.cmdInsert || '');
+                     }
+                   })
+                   .catch(error => console.error('Erro ao carregar dados:', error));
+               } else {
+                 sqlEditor.setValue('');
+               }
+             });
+           </script>
+         </select>
       </div>
       
       <!-- Campo para Código SQL com CodeMirror -->
-      <!-- O textarea fica oculto e o CodeMirror é renderizado no div com largura fixa -->
       <div class="form-group" style="width: 100%;">
+         <!-- Textarea oculto de fallback -->
          <textarea id="sqlCode" name="sqlCode" style="display: none;"></textarea>
-         <!-- Aqui definimos uma largura fixa (800px) para o editor -->
+         <!-- Container com largura fixa para o CodeMirror -->
          <div id="sqlEditor" style="border: 1px solid #ccc; height: 300px; width: 1200px;"></div>
       </div>
       
-      <!-- Tabela Oculta para Resultados da Consulta -->
+      <!-- Tabela Oculta para Resultados da Consulta (sem controles de paginação) -->
       <div id="queryResultsContainer" style="display:none; margin-top:20px;">
          <h4>Resultados da Consulta</h4>
          <table class="table table-bordered">
             <thead id="queryResultsHeader">
-               <!-- Cabeçalho inserido via JavaScript -->
+              <!-- Cabeçalho inserido via JavaScript -->
             </thead>
             <tbody id="queryResultsBody">
-               <!-- Dados inseridos via JavaScript -->
+              <!-- Dados inseridos via JavaScript -->
             </tbody>
          </table>
-         <!-- Controles de Paginação -->
-         <div class="pagination">
-             <button type="button" id="prevPage" class="btn btn-secondary" onclick="prevPageSelecao()">Anterior</button>
-             <span id="pageIndicatorSelecao">1</span>
-             <button type="button" id="nextPage" class="btn btn-secondary" onclick="nextPageSelecao()">Próximo</button>
-         </div>
       </div>
       
       <!-- Toolbox com botões -->
@@ -90,7 +79,7 @@
 </div>
 
 <script>
-  // Declaração global para uso do editor nas funções
+  // Declaração global para uso do editor
   var sqlEditor;
 
   document.addEventListener('DOMContentLoaded', function(){
@@ -105,7 +94,7 @@
       smartIndent: true,
       matchBrackets: true,
       autofocus: true,
-      lineWrapping: true  // Ativa a quebra de linha para manter a largura fixa
+      lineWrapping: true  // Garante que o editor não expanda horizontalmente
     });
     
     // Popula o combo box DataSource
@@ -123,13 +112,11 @@
       .catch(error => console.error('Erro ao carregar DataSource:', error));
   });
   
-  let currentPageSelecao = 1;
-  
-  // Função para validar a query SQL (ao clicar em "Validar")
+  // Função para validar a query SQL (sem paginação)
   function validateSQLSelecao(){
      const idDataSource = document.getElementById('datasource').value;
      const sqlCode = sqlEditor.getValue().trim();
-     if (!datasource) {
+     if (!idDataSource) {
         alert('Por favor, selecione um Data Source.');
         return;
      }
@@ -137,39 +124,38 @@
         alert('Por favor, informe o código SQL.');
         return;
      }
-     // Chamada à API para validar e executar a query
+     // Chamada à API (sem o parâmetro de paginação)
      fetch('/api/script/validateSQL', {
        method: 'PUT',
        headers: { 'Content-Type': 'application/json' },
        body: JSON.stringify({
          idDataSource: idDataSource,
-         sql: sqlCode,
-         page: currentPageSelecao
+         sql: sqlCode
        })
      })
      .then(response => response.json())
      .then(result => {
-         // Exibe os resultados na tabela
          const resultsContainer = document.getElementById('queryResultsContainer');
          const header = document.getElementById('queryResultsHeader');
          const body = document.getElementById('queryResultsBody');
          header.innerHTML = '';
          body.innerHTML = '';
          
-         if (result.headers && result.headers.length > 0) {
+         // Se a API retornar um array de objetos, monta a tabela
+         if (Array.isArray(result) && result.length > 0) {
+           // Cria o cabeçalho a partir das chaves do primeiro objeto
            let headerRow = document.createElement('tr');
-           result.headers.forEach(col => {
+           Object.keys(result[0]).forEach(key => {
              let th = document.createElement('th');
-             th.textContent = col;
+             th.textContent = key;
              headerRow.appendChild(th);
            });
            header.appendChild(headerRow);
-         }
-         
-         if (result.rows && result.rows.length > 0) {
-           result.rows.forEach(row => {
+           
+           // Insere os dados de cada registro
+           result.forEach(row => {
              let tr = document.createElement('tr');
-             row.forEach(cell => {
+             Object.values(row).forEach(cell => {
                let td = document.createElement('td');
                td.textContent = cell;
                tr.appendChild(td);
@@ -179,14 +165,13 @@
          } else {
            let tr = document.createElement('tr');
            let td = document.createElement('td');
-           td.colSpan = result.headers ? result.headers.length : 1;
+           td.colSpan = 1;
            td.textContent = 'Nenhum dado encontrado.';
            tr.appendChild(td);
            body.appendChild(tr);
          }
          
          resultsContainer.style.display = 'block';
-         document.getElementById('pageIndicatorSelecao').textContent = currentPageSelecao;
      })
      .catch(error => {
          console.error('Erro ao validar SQL:', error);
@@ -194,19 +179,7 @@
      });
   }
   
-  function prevPageSelecao(){
-    if (currentPageSelecao > 1) {
-      currentPageSelecao--;
-      validateSQLSelecao();
-    }
-  }
-  
-  function nextPageSelecao(){
-    currentPageSelecao++;
-    validateSQLSelecao();
-  }
-  
-  // Função para salvar os dados (atualizar script.selDados)
+  // Função para salvar os dados (atualiza script.selDados)
   function saveSelecao(){
      const datasource = document.getElementById('datasource').value;
      const sqlCode = sqlEditor.getValue().trim();
@@ -214,8 +187,6 @@
         alert('Preencha todos os campos antes de salvar.');
         return;
      }
-     // Chamada à API para salvar os dados no campo selDados do script
-     // /api/script/<string:idProjeto>/<string:ordem>/<string:seq>
      fetch('/api/script/selDados', {
        method: 'PUT',
        headers: { 'Content-Type': 'application/json' },
@@ -243,7 +214,6 @@
      document.getElementById('selecaoForm').reset();
      sqlEditor.setValue("");
      document.getElementById('queryResultsContainer').style.display = 'none';
-     // Adapte o fechamento do modal conforme sua lógica de exibição
      document.getElementById('formModalSelecao').style.display = 'none';
   }
 </script>
