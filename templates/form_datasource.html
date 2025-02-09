@@ -57,13 +57,32 @@
 
             <div class="form-group">
                 <label for="dsDataSource">Data Source:</label>
-                <input type="text" id="dsDataSource" name="dsDataSource" >
+                <input type="text" id="dsDataSource" name="dsDataSource" readonly>
             </div>
 
             <div class="form-group">
                 <label for="TpBanco">Tipo Banco:</label>
-                <input type="text" id="TpBanco" name="TpBanco" >
+                <select id="TpBanco" name="TpBanco">
+                    <option value="">Selecione um Tipo Banco</option>
+                </select>
             </div>
+
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    fetch('/api/suppdatadet/0/TpBanco')
+                        .then(response => response.json())
+                        .then(data => {
+                            const tpBancoSelect = document.getElementById('TpBanco');
+                            data.forEach(item => {
+                                const option = document.createElement('option');
+                                option.value = item.Chave1;
+                                option.textContent = item.Chave1;
+                                tpBancoSelect.appendChild(option);
+                            });
+                        })
+                        .catch(error => console.error('Erro ao carregar tipos de banco:', error));
+                });
+            </script>
 
             <div class="form-group">
                 <label for="nmBanco">Nome Banco:</label>
@@ -179,10 +198,17 @@
         document.getElementById('datasourceForm').reset();
         document.getElementById('formModal').classList.add('active');
         document.getElementById('idDataSource').value = '';
-        document.getElementById('idDataSource').readOnly = false;
+        document.getElementById('idDataSource').readOnly = true;
+
+        document.getElementById('dsDataSource').value = '';
+        document.getElementById('dsDataSource').readOnly = false;
+
         // Esconder mensagem de erro ao abrir modal
         document.getElementById('errorMessage').style.display = 'none';
         document.getElementById('errorMessage').innerHTML = '';
+
+        document.getElementById('idDataSourceContainer').style.display = 'none';
+
     }
     
     function hideModal() {
@@ -199,6 +225,9 @@
             alert('Por favor, selecione uma linha para editar.');
             return;
         }
+        document.getElementById('idDataSourceContainer').style.display = 'block';
+        document.getElementById('idDataSource').readOnly = true;
+
         const url = `/api/datasource/${key.idDataSource}`;
         fetch(url)
             .then(response => response.json())
@@ -238,8 +267,8 @@
        
     document.getElementById('datasourceForm').addEventListener('submit', function(event) {
         event.preventDefault();
-        const datasource = document.getElementById('idDataSource').value.trim();
-        const isEdit = document.getElementById('idDataSource').readOnly === true;
+        const datasource = document.getElementById('dsDataSource').value.trim();
+        const isEdit = document.getElementById('dsDataSource').readOnly === true;
         const method = isEdit ? 'PUT' : 'POST';
         let url = '/api/datasource/';
         if (isEdit) {

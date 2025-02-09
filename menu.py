@@ -11,6 +11,7 @@ menu_items = [
     {"name": "SD Perfil User", "url": "/suppdatadet/PerfilUSR/0"},
     {"name": "SD Status Processo", "url": "/suppdatadet/StatusProc/0"},
     {"name": "SD Modulo", "url": "/suppdatadet/Modulo/0"},
+    {"name": "SD Tipo Banco","url": "/suppdatadet/TpBanco/0"},
     {"name": "Usuários", "url": "/users"},
     {"name": "Gerar Form", "url": "/generate-code"},
     {"name": "Sobre", "url": "/about"},

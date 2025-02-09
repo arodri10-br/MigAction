@@ -221,7 +221,7 @@ class DataSource(Base):
     nmBanco = Column(String(30))
     server = Column(String(50))
     user = Column(String(20))
-    passw_encrypted = Column(String(255), nullable=False)
+    passw_encrypted = Column(String(255), nullable=True)
     username = Column(String(10), ForeignKey('usuario.username'))
     dtAtualizacao = Column(Date)
 
