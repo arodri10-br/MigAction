@@ -4,6 +4,35 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/sql/sql.min.js"></script>
 
+<!-- Estilos customizados para a tabela de resultados -->
+<style>
+  /* Container para a tabela com scroll vertical e horizontal */
+  #queryResultsContainer {
+    display: none;
+    margin-top: 20px;
+    max-height: 400px;       /* Altura máxima ajustável conforme necessidade */
+    overflow-y: auto;        /* Scroll vertical */
+    overflow-x: auto;        /* Scroll horizontal */
+  }
+  /* Ajusta a tabela para ocupar toda a largura do container */
+  #queryResultsContainer table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  /* Estiliza cabeçalhos e células */
+  #queryResultsContainer th,
+  #queryResultsContainer td {
+    padding: 8px;
+    border: 1px solid #ddd;
+    text-align: left;
+  }
+  /* Cabeçalho com fundo suave para combinar com o design */
+  #queryResultsContainer th {
+    background-color: #f8f8f8;
+    font-weight: bold;
+  }
+</style>
+
 <!-- Modal de Seleção -->
 <div id="formModalSelecao" class="modal">
   <div class="modal-content" style="width: 90%; max-width: 1200px; margin: auto;">
@@ -55,8 +84,8 @@
          <div id="sqlEditor" style="border: 1px solid #ccc; height: 300px; width: 1200px;"></div>
       </div>
       
-      <!-- Tabela Oculta para Resultados da Consulta (sem controles de paginação) -->
-      <div id="queryResultsContainer" style="display:none; margin-top:20px;">
+      <!-- Tabela Oculta para Resultados da Consulta (com scroll e formatação customizada) -->
+      <div id="queryResultsContainer">
          <h4>Resultados da Consulta</h4>
          <table class="table table-bordered">
             <thead id="queryResultsHeader">
