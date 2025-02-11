@@ -1,35 +1,118 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Sistema de Migração{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Sistema de Migração{% endblock %}</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <!-- Seus estilos customizados -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <style>
+    /* Estilos customizados para a sidebar */
+    .sidebar { 
+      background: #f8f9fa;
+      padding: 15px;
+    }
+    .sidebar ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    .sidebar a {
+      display: block;
+      padding: 8px 12px;
+      color: #333;
+      text-decoration: none;
+      border-radius: 4px;
+    }
+    .sidebar a:hover {
+      background: #e2e6ea;
+    }
+    /* O ícone agora é exibido à esquerda, com margem à direita */
+    .collapse-icon {
+      margin-right: 5px;
+      font-weight: bold;
+    }
+
+    .sidebar li {
+    margin-bottom: 2px; /* Diminui o espaçamento entre os itens do menu */
+    padding: 2px 0; /* Ajuste para menor espaçamento interno */
+    }
+
+  </style>
 </head>
 <body>
 
-    <nav class="navbar">
-        <a href="{{ url_for('routes.index') }}" class="navbar-brand">Sistema de Migração</a>
-        <div class="navbar-info-right">
-            {% if session.username %}
-                <span>Usuário: {{ session.nome }} | Projeto: {{ session.nomeProjeto }}</span>
-            {% endif %}
-        </div>
-    </nav>
-
-    <div class="container">
-        <div class="sidebar">
-            <ul>
-                {% for item in menu_items %}
-                    <li><a href="{{ item.url }}">{{ item.name }}</a></li>
-                {% endfor %}
-            </ul>
-        </div>
-
-        <div class="content">
-            {% block content %}{% endblock %}
-        </div>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a href="{{ url_for('routes.index') }}" class="navbar-brand">Sistema de Migração</a>
+    <div class="navbar-info-right ml-auto">
+      {% if session.username %}
+        <span>Usuário: {{ session.nome }} | Projeto: {{ session.nomeProjeto }}</span>
+      {% endif %}
     </div>
+  </nav>
 
+  <div class="container-fluid">
+    <div class="row">
+      <!-- Sidebar com largura reduzida -->
+      <div class="col-md-1.5 sidebar">
+        <ul class="nav flex-column">
+          {% for item in menu_items %}
+            {% if item.Grupo is not defined %}
+              <!-- Itens sem grupo (primeiro nível) -->
+              <li class="nav-item">
+                <a class="nav-link" href="{{ item.url }}">{{ item.name }}</a>
+              </li>
+            {% elif item.name == item.Grupo %}
+              {# Item que define o grupo, por exemplo "Sup. Data" #}
+              <li class="nav-item">
+                <a class="nav-link" data-toggle="collapse" href="#collapse{{ item.name|replace(' ', '')|replace('.', '') }}" role="button" aria-expanded="false" aria-controls="collapse{{ item.name|replace(' ', '')|replace('.', '') }}">
+                  <span class="collapse-icon">+</span>{{ item.name }}
+                </a>
+                <div class="collapse" id="collapse{{ item.name|replace(' ', '')|replace('.', '') }}">
+                  <ul class="nav flex-column ml-3">
+                    {% for sub_item in menu_items %}
+                      {% if sub_item.Grupo is defined and sub_item.Grupo == item.name and sub_item.name != item.name %}
+                        <li class="nav-item">
+                          <a class="nav-link" href="{{ sub_item.url }}">{{ sub_item.name }}</a>
+                        </li>
+                      {% endif %}
+                    {% endfor %}
+                  </ul>
+                </div>
+              </li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      </div>
+
+      <!-- Área de conteúdo -->
+      <div class="col-md-10 content">
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+  </div>
+
+  <!-- jQuery, Popper.js e Bootstrap JS -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+  <!-- Script para trocar o sinal do menu colapsável e manter o submenu aberto -->
+  <script>
+    $(document).ready(function() {
+      // Alteração do ícone ao abrir ou fechar o grupo
+      $('.collapse').on('show.bs.collapse', function () {
+        $(this).prev().find('.collapse-icon').text('-');
+      });
+      $('.collapse').on('hide.bs.collapse', function () {
+        $(this).prev().find('.collapse-icon').text('+');
+      });
+      // Impede que cliques nos links do submenu fechem automaticamente o grupo
+      $('.collapse ul li a').on('click', function(e) {
+        e.stopPropagation();
+      });
+    });
+  </script>
 </body>
 </html>

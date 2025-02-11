@@ -265,14 +265,15 @@ class DataSource(Base):
 class Carga(Base):
     __tablename__ = 'carga'
 
-    idProjeto = Column(Integer, ForeignKey('processos.idProjeto'))
-    seq = Column(Integer, ForeignKey('processos.seq'))
     uniqueKeyId = Column(Integer, primary_key=True, autoincrement=True)
+    idProjeto = Column(Integer, ForeignKey('script.idProjeto'))
+    ordem = Column(Integer, ForeignKey('script.ordem'))
+    seq = Column(Integer, ForeignKey('script.seq'))
     idDSOrigem = Column(Integer, ForeignKey('datasource.idDataSource'))
     idDSDestino = Column(Integer, ForeignKey('datasource.idDataSource'))
     operacao = Column(String(50))
     status = Column(String(20), nullable=False)
-    dbOper = Column(String(50), nullable=False)
+    dbOper = Column(String(10), nullable=False)
     dtCriacao = Column(Date)
     dtExec = Column(Date)
     dtAtualizacao = Column(Date)
