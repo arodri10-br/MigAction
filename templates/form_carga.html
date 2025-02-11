@@ -1,0 +1,290 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="mb-4">Manutenção de Carga</h1>
+</div>
+<div class="toolbar">
+    <button onclick="showAddModal()" class="primary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Novo
+    </button>
+    <button onclick="editSelected()" class="primary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+        Editar
+    </button>
+    <button onclick="deleteSelected()" class="secondary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        Excluir
+    </button>
+</div>
+
+<div class="grid-container">
+    <table class="grid">
+        <thead>
+            <tr>
+                <th class="radio-cell"></th>
+                <th>uniqueKeyId</th>
+                <th>idProjeto</th>
+                <th>ordem</th>
+                <th>seq</th>
+                <th>idDSOrigem</th>
+                <th>idDSDestino</th>
+                <th>operacao</th>
+                <th>Comando</th>
+                <th>status</th>
+                <th>dbOper</th>
+                <th>dtCriacao</th>
+                <th>dtExec</th>
+            </tr>
+        </thead>
+        <tbody id="cargaTable">
+            <!-- Preenchido dinamicamente -->
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal de Formulário -->
+<div id="formModal" class="modal">
+    <div class="modal-content">
+        <h2 id="modalTitle">Novo "carga"</h2>
+        <form id="cargaForm">
+            
+            <div class="form-group" id="uniqueKeyIdContainer">
+                <label for="uniqueKeyId">uniqueKeyId:</label>
+                <input type="number" id="uniqueKeyId" name="uniqueKeyId" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="idProjeto">idProjeto:</label>
+                <input type="number" id="idProjeto" name="idProjeto" >
+            </div>
+
+            <div class="form-group">
+                <label for="ordem">ordem:</label>
+                <input type="number" id="ordem" name="ordem" >
+            </div>
+
+            <div class="form-group">
+                <label for="seq">seq:</label>
+                <input type="number" id="seq" name="seq" >
+            </div>
+
+            <div class="form-group">
+                <label for="idDSOrigem">idDSOrigem:</label>
+                <input type="number" id="idDSOrigem" name="idDSOrigem" >
+            </div>
+
+            <div class="form-group">
+                <label for="idDSDestino">idDSDestino:</label>
+                <input type="number" id="idDSDestino" name="idDSDestino" >
+            </div>
+
+            <div class="form-group">
+                <label for="operacao">operacao:</label>
+                <input type="text" id="operacao" name="operacao" >
+            </div>
+            
+            <div class="form-group">
+                <label for="cmdInsert">Comando:</label>
+                <input type="text" id="cmdInsert" name="cmdInsert" >
+            </div>
+
+            <div class="form-group">
+                <label for="status">status:</label>
+                <input type="text" id="status" name="status" >
+            </div>
+
+            <div class="form-group">
+                <label for="dbOper">dbOper:</label>
+                <input type="text" id="dbOper" name="dbOper" >
+            </div>
+
+            <div class="form-group">
+                <label for="dtCriacao">dtCriacao:</label>
+                <input type="date" id="dtCriacao" name="dtCriacao" >
+            </div>
+
+            <div class="form-group">
+                <label for="dtExec">dtExec:</label>
+                <input type="date" id="dtExec" name="dtExec" >
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="secondary" onclick="hideModal()">Cancelar</button>
+                <button type="submit" class="primary">Salvar</button>
+            </div>
+            <div id="errorMessage" class="error-message" style="display: none; color: red; margin-top: 10px;"></div>
+        </form>
+    </div>
+</div>
+
+<script>
+
+    function getSelectedcarga() {
+        const selected = document.querySelector('input[name="selectedUser"]:checked');
+        if (!selected) {
+            return null;
+        }
+        // Divide a string pelo separador para obter todos valores da chave primária
+        const keyParts = selected.value.split('|');
+        return {
+
+            uniqueKeyId: keyParts[0]
+        };
+
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        loadcarga();
+    });
+    function loadcarga() {
+        fetch('/api/carga/')
+            .then(response => response.json())
+            .then(data => {
+                const cargaTable = document.getElementById('cargaTable');
+                cargaTable.innerHTML = '';
+                data.forEach(user => {
+                    const row = cargaTable.insertRow();
+                    const radioCell = row.insertCell();
+                    radioCell.className = 'radio-cell';
+                    radioCell.innerHTML = `<input type="radio" name="selectedUser" value="${user.uniqueKeyId}">`;
+
+                    row.insertCell().innerText = user.uniqueKeyId;
+                    row.insertCell().innerText = user.idProjeto;
+                    row.insertCell().innerText = user.ordem;
+                    row.insertCell().innerText = user.seq;
+                    row.insertCell().innerText = user.idDSOrigem;
+                    row.insertCell().innerText = user.idDSDestino;
+                    row.insertCell().innerText = user.operacao;
+                    row.insertCell().innerText = user.cmdInsert;
+                    row.insertCell().innerText = user.status;
+                    row.insertCell().innerText = user.dbOper;
+                    row.insertCell().innerText = user.dtCriacao;
+                    row.insertCell().innerText = user.dtExec;
+
+                });
+            })
+        .catch(error => console.error('Erro ao carregar carga:', error));
+    }
+    
+
+    function showAddModal() {
+        document.getElementById('modalTitle').textContent = 'Novo carga';
+        document.getElementById('cargaForm').reset();
+        document.getElementById('formModal').classList.add('active');
+        document.getElementById('uniqueKeyId').value = '';
+
+        document.getElementById('uniqueKeyId').readOnly = false;
+
+
+        // Esconder mensagem de erro ao abrir modal
+        document.getElementById('errorMessage').style.display = 'none';
+        document.getElementById('errorMessage').innerHTML = '';
+    }
+    
+    function hideModal() {
+        document.getElementById('formModal').classList.remove('active');
+        //  Esconder e limpar a mensagem de erro ao fechar o modal
+        let errorDiv = document.getElementById('errorMessage');
+        errorDiv.style.display = 'none';
+        errorDiv.innerHTML = '';
+    }
+
+    function editSelected() {
+        const key = getSelectedcarga();
+        if (!key) {
+            alert('Por favor, selecione uma linha para editar.');
+            return;
+        }
+        const url = `/api/carga/${key.uniqueKeyId}`;
+        fetch(url)
+            .then(response => response.json())
+            .then(carga => {
+                document.getElementById('modalTitle').textContent = 'Editar Manutenção de Carga';
+                document.getElementById("uniqueKeyId").value = carga.uniqueKeyId;
+                document.getElementById("idProjeto").value = carga.idProjeto;
+                document.getElementById("ordem").value = carga.ordem;
+                document.getElementById("seq").value = carga.seq;
+                document.getElementById("idDSOrigem").value = carga.idDSOrigem;
+                document.getElementById("idDSDestino").value = carga.idDSDestino;
+                document.getElementById("operacao").value = carga.operacao;
+                document.getElementById("cmdInsert").value = carga.cmdInsert;
+                document.getElementById("status").value = carga.status;
+                document.getElementById("dbOper").value = carga.dbOper;
+                document.getElementById("dtCriacao").value = carga.dtCriacao;
+                document.getElementById("dtExec").value = carga.dtExec;
+
+                document.getElementById("uniqueKeyId").style.display = "block";
+
+
+                document.getElementById('formModal').classList.add('active');
+            })
+
+            .catch(error => {
+                showError('Erro ao carregar carga para edição.');
+                console.error('Erro ao carregar carga:', error);
+            });
+        }
+
+    function deleteSelected() {
+        const carga = getSelectedcarga();
+        if (!carga) {
+            alert('Por favor, selecione um carga para excluir.');
+            return;
+        }
+
+        if (confirm('Tem certeza que deseja excluir este carga?')) {
+            fetch(`/api/carga/${carga}`, {
+                method: 'DELETE'
+            }).then(() => {
+                loadcarga();
+            });
+        }
+    }
+       
+    document.getElementById('cargaForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const carga = document.getElementById('uniqueKeyId').value.trim();
+        const isEdit = document.getElementById('uniqueKeyId').readOnly === true;
+        const method = isEdit ? 'PUT' : 'POST';
+        let url = '/api/carga/';
+        if (isEdit) {
+            const uniqueKeyId = document.getElementById('uniqueKeyId').value.trim();
+
+            url = `/api/carga/${encodeURIComponent(uniqueKeyId)}`;
+        }            
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+
+        fetch(url, {
+            method: method,
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => { throw new Error(err.error || 'Erro desconhecido'); });
+        }
+        return response.json();
+    })
+    .then(() => {
+        hideModal();
+        loadcarga();
+    })
+    .catch(error => {
+        showError(error.message);
+    });
+});
+
+function showError(message) {
+    let errorDiv = document.getElementById('errorMessage');
+    errorDiv.style.display = 'block'; 
+    errorDiv.innerHTML = `<strong>Erro:</strong> ${message}`;
+}
+          
+</script>
+
+{% endblock %}

@@ -89,3 +89,7 @@ def call_Processo():
 @bp_routes.route('/script/<string:idProjeto>/<string:ordem>')
 def call_Script(idProjeto, ordem):
     return render_template('form_script.html', menu_items=menu_items, idProjeto=idProjeto, ordem=ordem)
+
+@bp_routes.route('/carga')
+def call_Carga():
+    return render_template('form_carga.html', menu_items=menu_items)

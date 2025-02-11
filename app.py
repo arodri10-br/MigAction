@@ -10,6 +10,7 @@ from api_suppdataconfig import bp_suppdataconfig
 from api_suppdatadet import bp_suppdatadet
 from api_datasource import bp_datasource
 from api_script import bp_script
+from api_carga import bp_carga
 
 from api_processo import bp_processo
 
@@ -41,6 +42,7 @@ app.register_blueprint(bp_suppdatadet)
 app.register_blueprint(bp_datasource)
 app.register_blueprint(bp_processo)
 app.register_blueprint(bp_script)
+app.register_blueprint(bp_carga)
 
 if __name__ == '__main__':
     app.run(debug=True)

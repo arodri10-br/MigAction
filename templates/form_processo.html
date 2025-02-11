@@ -24,6 +24,12 @@
         </svg>
         <span>Scripts</span>
     </button>
+    <button onclick="showConfigModal()" class="tertiary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2v20M2 12h20"></path>
+        </svg>
+        <span>Carga</span>
+    </button>
 </div>
 
 <div class="grid-container">
@@ -78,6 +84,152 @@
         </form>
     </div>
 </div>
+
+<!-- Modal de Configuração -->
+<div id="configModal" class="modal">
+    <div class="modal-content">
+        <h2 id="configModalTitle">Configuração</h2>
+        <form id="configForm">
+            <div class="form-group">
+                <label for="idDSOrigem">Origem:</label>
+                <select id="idDSOrigem" name="idDSOrigem">
+                    <option value="">Selecione...</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="idDSDestino">Destino:</label>
+                <select id="idDSDestino" name="idDSDestino">
+                    <option value="">Selecione...</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="operacao">Operação:</label>
+                <input type="text" id="operacao" name="operacao" maxlength="50">
+            </div>
+
+            <div class="form-group">
+                <label for="dbOper">DB Oper:</label>
+                <select id="dbOper" name="dbOper">
+                    <option value="">Selecione...</option>
+                </select>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="secondary" onclick="hideConfigModal()">Cancelar</button>
+                <button type="submit" class="primary">Salvar</button>
+            </div>
+            <div id="configErrorMessage" class="error-message" style="display: none; color: red; margin-top: 10px;"></div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        loadDataSources();
+        loadDbOper();
+    });
+
+    function loadDataSources() {
+        fetch('/api/datasource/')
+            .then(response => response.json())
+            .then(data => {
+                const origemSelect = document.getElementById('idDSOrigem');
+                const destinoSelect = document.getElementById('idDSDestino');
+                data.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.idDataSource;
+                    option.textContent = item.dsDataSource;
+                    origemSelect.appendChild(option);
+                    destinoSelect.appendChild(option.cloneNode(true));
+                });
+            })
+            .catch(error => console.error('Erro ao carregar data sources:', error));
+    }
+
+    function loadDbOper() {
+        fetch('api/suppdatadet/0/dbOper')
+            .then(response => response.json())
+            .then(data => {
+                const dbOperSelect = document.getElementById('dbOper');
+                data.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item.Chave1;
+                    option.textContent = item.Chave1;
+                    dbOperSelect.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Erro ao carregar DB Oper:', error));
+    }
+
+    function showConfigModal() {
+        const key = getSelectedprocesso();
+        if (!key) {
+            alert('Por favor, selecione uma linha para editar.');
+            return;
+        }
+        
+        document.getElementById('configModal').classList.add('active');
+        document.getElementById('configForm').reset();
+        document.getElementById('configErrorMessage').style.display = 'none';
+        document.getElementById('configErrorMessage').innerHTML = '';
+    }
+    
+    function hideConfigModal() {
+        document.getElementById('configModal').classList.remove('active');
+        let errorDiv = document.getElementById('configErrorMessage');
+        errorDiv.style.display = 'none';
+        errorDiv.innerHTML = '';
+    }
+
+    document.getElementById('configForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const formData = new FormData(this);
+        const data = Object.fromEntries(formData.entries());
+        const key = getSelectedprocesso();
+        if (!key) {
+            alert('Por favor, selecione uma linha para editar.');
+            return;
+        }
+        
+        fetch('/api/carga/geracao', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                ...data,
+                idProjeto: key.idProjeto,
+                ordem: key.ordem,
+                idDSOrigem: document.getElementById('idDSOrigem').value,
+                idDSDestino: document.getElementById('idDSDestino').value,
+                dbOper: document.getElementById('dbOper').value
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => { throw new Error(err.error || 'Erro desconhecido'); });
+            }
+            return response.json();
+        })
+        .then(() => {
+            hideConfigModal();
+            // Reload or update the necessary part of the page
+        })
+        .catch(error => {
+            showConfigError(error.message);
+        });
+    });
+
+    function showConfigError(message) {
+        let errorDiv = document.getElementById('configErrorMessage');
+        errorDiv.style.display = 'block';
+        errorDiv.innerHTML = `<strong>Erro:</strong> ${message}`;
+    }
+</script>
+
+
 
 <script>
 

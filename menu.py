@@ -15,7 +15,9 @@ menu_items = [
     {"name": "Modulo", "url": "/suppdatadet/Modulo/0", "Grupo": "Sup. Data"},
     {"name": "Tipo Banco","url": "/suppdatadet/TpBanco/0", "Grupo": "Sup. Data"},
     {"name": "Operação Banco", "url": "/suppdatadet/dbOper/0", "Grupo": "Sup. Data"},
-    
+
+    {"name": "Carga", "url": "/carga"},
+
     {"name": "Usuários", "url": "/users"},
     {"name": "Gerar Form", "url": "/generate-code"},
     {"name": "Sobre", "url": "/about"},

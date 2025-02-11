@@ -272,6 +272,7 @@ class Carga(Base):
     idDSOrigem = Column(Integer, ForeignKey('datasource.idDataSource'))
     idDSDestino = Column(Integer, ForeignKey('datasource.idDataSource'))
     operacao = Column(String(50))
+    cmdInsert = Column(Text)
     status = Column(String(20), nullable=False)
     dbOper = Column(String(10), nullable=False)
     dtCriacao = Column(Date)
