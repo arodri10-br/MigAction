@@ -30,6 +30,14 @@
         </svg>
         <span>Carga</span>
     </button>
+    <!-- Adicionando botão "Exec Carga" na toolbar -->
+    <button onclick="execScriptCarga()" class="primary">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12l5 5L20 7"></path>
+        </svg>
+        Exec Carga
+    </button>
+
 </div>
 
 <div class="grid-container">
@@ -226,6 +234,45 @@
         let errorDiv = document.getElementById('configErrorMessage');
         errorDiv.style.display = 'block';
         errorDiv.innerHTML = `<strong>Erro:</strong> ${message}`;
+    }
+
+
+    function execScriptCarga() {
+        // Obtém a linha selecionada
+        const key = getSelectedprocesso();
+        
+        if (!key) {
+            alert('Por favor, selecione uma linha antes de executar a carga.');
+            return;
+        }
+
+        // Confirmação antes de executar a API
+        if (!confirm('Tem certeza que deseja executar a carga para este processo?')) {
+            return;
+        }
+
+        // Montando a URL da API
+        const url = `/api/carga/exec/${encodeURIComponent(key.idProjeto)}/${encodeURIComponent(key.ordem)}`;
+
+        // Chamando a API via fetch com método PUT
+        fetch(url, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => { throw new Error(err.error || 'Erro desconhecido'); });
+            }
+            return response.json();
+        })
+        .then(data => {
+            alert('Carga executada com sucesso!');
+        })
+        .catch(error => {
+            alert('Erro ao executar carga: ' + error.message);
+        });
     }
 </script>
 
