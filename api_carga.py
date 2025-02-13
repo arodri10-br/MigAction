@@ -166,15 +166,20 @@ def exec_carga(idProjeto,ordem):
                 result = conn_origem.execute(text(carga.cmdInsert))
                 rows = result.fetchall()
                 count_inserted = 0
-                print(f"Numero de registros selecionados : {len(rows)}")
+                #print(f"Numero de registros selecionados : {len(rows)}")
 
                 columns = result.keys()
                 values = [dict(zip(result.keys(), row)) for row in rows]
                 insert_command = f"INSERT INTO {script.Tabela} ({', '.join(columns)}) VALUES ({', '.join([f':{col}' for col in columns])})"
                 for row in rows:
-                    print(f"Inserting Command : {insert_command}")
-                    conn_destino.execute(text(insert_command), dict(zip(columns, row)))
-                    count_inserted += 1
+                    #print(f"Inserting Command : {insert_command}")
+                    try:
+                        conn_destino.execute(text(insert_command), dict(zip(columns, row)))
+                        #print(f"Insert successful for row: {row}")
+                        count_inserted += 1
+                        conn_destino.commit() 
+                    except Exception as insert_error:
+                        print(f"Insert failed for row: {row} with error: {insert_error}")
 
                 if count_inserted == len(rows):
                     carga.status = 'S'
